@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+    <PackageReference Include="Moq" Version="4.13.1" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\vc_module_MelhorEnvio.Core\vc_module_MelhorEnvio.Core.csproj" />
+    <ProjectReference Include="..\vc_module_MelhorEnvio.Data\vc_module_MelhorEnvio.Data.csproj" />
+    <ProjectReference Include="..\vc_module_MelhorEnvio.Web\vc_module_MelhorEnvio.Web.csproj" />
+  </ItemGroup>
+
+</Project>

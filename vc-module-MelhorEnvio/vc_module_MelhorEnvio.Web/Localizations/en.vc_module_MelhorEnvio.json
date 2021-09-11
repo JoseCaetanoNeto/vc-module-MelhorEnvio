@@ -1,0 +1,72 @@
+{
+  "vcmoduleMelhorEnvio": {
+    "blades": {
+      "hello-world": {
+        "title": "Hello world blade"
+      }
+    }
+  },
+  "shipping": {
+    "labels": {
+      "MelhorEnvioMethod": {
+        "name": "Melhor Envio gateway",
+        "description": "Melhor envio gateway integration"
+      }
+    }
+  },
+  "permissions": {
+    "vcmoduleMelhorEnvio:access": "Open vcmoduleMelhorEnvio menu",
+    "vcmoduleMelhorEnvio:create": "Create vcmoduleMelhorEnvio related data",
+    "vcmoduleMelhorEnvio:read": "View vcmoduleMelhorEnvio related data",
+    "vcmoduleMelhorEnvio:update": "Update vcmoduleMelhorEnvio related data",
+    "vcmoduleMelhorEnvio:delete": "Delete vcmoduleMelhorEnvio related data"
+  },
+  "settings": {
+    "vcmoduleMelhorEnvio": {
+      "sandbox": {
+        "title": "sandbox",
+        "description": ""
+      },
+      "client_id": {
+        "title": "client_id",
+        "description": ""
+      },
+      "client_secret": {
+        "title": "client_secret",
+        "description": ""
+      },
+      "sendDataOnShippingStatus": {
+        "title": "Send Data on Shipping Status change to",
+        "description": ""
+      },
+      "sendDataOnOrderStatus": {
+        "title": "Send Data on Order Status change to",
+        "description": ""
+      },
+      "document": {
+        "title": "CPF",
+        "description": "Somente quando envio 'nonCommercial' for 'sim'"
+      },
+      "stateRegister": {
+        "title": "Inscrição Estadual",
+        "description": "quando envio 'nonCommercial' for 'não'"
+      },
+      "companyDocument": {
+        "title": "CNPJ",
+        "description": "quando envio 'nonCommercial' for 'não'"
+      },
+      "economicActivityCode": {
+        "title": "CNAE",
+        "description": "quando envio 'nonCommercial' for 'não', obrigatório quando fo LATAN-CARGO"
+      },
+      "nonCommercial": {
+        "title": "non Commercial send",
+        "description": "Envio não comercial, marcar 'Sim'"
+      },
+      "token": {
+        "title": "",
+        "description": ""
+      }
+    }
+  }
+}
