@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,7 +23,7 @@ namespace vc_module_MelhorEnvio.Core
         /// <returns>Efetua chamada POST/GET para uma determinada API</returns>
         /// </summary>
         /// <param name="pUrl"></param><param name="pAuthorization"></param><param name="pMethod">POST/GET</param><param name="pObjetoEntrada"></param>
-        public static Tuple<T2, T> EfetuarChamadaApi<T2, T>(string pUrl, string pAuthorization, string pMethod, string pAgent = null, object pObjetoEntrada = null)
+        public static Tuple<T2, T> EfetuarChamadaApi<T2, T>(string pUrl, string pAuthorization, string pMethod, string pAgent = null, object pObjetoEntrada = null) where T2 : Models.ErrorOut, new()
         {
             string objEntradaSerializado = string.Empty;
             if (pObjetoEntrada != null)
@@ -84,10 +85,18 @@ namespace vc_module_MelhorEnvio.Core
                                         using (StreamReader s = new StreamReader(ex.Response.GetResponseStream()))
                                         {
                                             string error = s.ReadToEnd();
-                                            T2 typeError = JsonConvert.DeserializeObject<T2>(error);
-
+                                            
+                                            JObject jObject = JsonConvert.DeserializeObject<JObject>(error);
+                                            T2 typeError;
+                                            if (jObject.ContainsKey("message"))
+                                                typeError = JsonConvert.DeserializeObject<T2>(error);
+                                            else
+                                            {
+                                                typeError = new T2();
+                                                typeError.message = Convert.ToString(jObject["error"]);
+                                            }
                                             // injeta no retornos json's atuais class faze status_code, para pegar o código do http code e propriedade de erro
-                                            JsonConvert.PopulateObject($"{{status_code:{(int)response.StatusCode}}}", typeError);
+                                            typeError.status_code = (int)response.StatusCode;
 
                                             // inserta classe de erro no objeto 
                                             string jsonInsert = $"{{errorOut:{JsonConvert.SerializeObject(typeError)}}}";

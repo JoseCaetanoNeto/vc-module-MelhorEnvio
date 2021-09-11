@@ -147,7 +147,7 @@ namespace vc_module_MelhorEnvio.Core
             return retList;
         }
 
-        public List<Models.CalculateOut> Calculate(Store pStore, string pShipmentPostalCode, ICollection<VirtoCommerce.OrdersModule.Core.Model.LineItem> pItems, FulfillmentCenter fulfillmentCenter)
+        public List<Models.CalculateOut> Calculate(Store pStore, string pShipmentPostalCode, ICollection<OrderModel.LineItem> pItems, FulfillmentCenter fulfillmentCenter)
         {
             return CalculateInt(pStore, pShipmentPostalCode, fulfillmentCenter.Address.PostalCode, ToItems(pItems, fulfillmentCenter));
         }
@@ -157,7 +157,7 @@ namespace vc_module_MelhorEnvio.Core
             return CalculateInt(pStore, pShipmentPostalCode, fulfillmentCenter.Address.PostalCode, ToItems(pItems, fulfillmentCenter));
         }
 
-        public Dictionary<OrderModel.ShipmentPackage, Models.CartOut> SendMECart(string pOrderNumber, string pCustomerId, VirtoCommerce.OrdersModule.Core.Model.Shipment pShipment, Store pStore, FulfillmentCenter pFulfillmentCenter)
+        public Dictionary<OrderModel.ShipmentPackage, Models.CartOut> SendMECart(string pOrderNumber, string pCustomerId, OrderModel.Shipment pShipment, Store pStore, FulfillmentCenter pFulfillmentCenter)
         {
             var customer = (Contact)GetCustomerAsync(pCustomerId).GetAwaiter().GetResult();
             var Service = DecodeOptionName(pShipment.ShipmentMethodOption);
@@ -212,7 +212,7 @@ namespace vc_module_MelhorEnvio.Core
                 Products = new List<Models.CartIn.Product>(),
                 Volumes = new List<Models.CartIn.Volume>(),
             };
-            if (Service.CompanyID == 1) // correios
+            if (Service.CompanyID == ModuleConstants.K_Company_CORREIOS) 
             {
                 return SendCorreios(pShipment, pStore, cartIn);
             }
@@ -222,7 +222,7 @@ namespace vc_module_MelhorEnvio.Core
             }
         }
 
-        private Dictionary<OrderModel.ShipmentPackage, Models.CartOut> SendCorreios(VirtoCommerce.OrdersModule.Core.Model.Shipment pShipment, Store pStore, Models.CartIn cartIn)
+        private Dictionary<OrderModel.ShipmentPackage, Models.CartOut> SendCorreios(OrderModel.Shipment pShipment, Store pStore, Models.CartIn cartIn)
         {
             MelhorEnvioService mes = new MelhorEnvioService(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
             mes.onSaveNewToken = SaveToken;
@@ -241,12 +241,13 @@ namespace vc_module_MelhorEnvio.Core
 
                 foreach (var item in Package.Items)
                 {
+                    var lineItem = pShipment.Items.FirstOrDefault(i => i.LineItemId == item.LineItemId).LineItem;
                     cartIn.Products.Clear();
                     cartIn.Products.Add(new Models.CartIn.Product()
                     {
-                        Name = item.LineItem.Name,
+                        Name = lineItem.Name, // item.LineItem is null, workaround
                         Quantity = item.Quantity,
-                        UnitaryValue = item.LineItem.PriceWithTax
+                        UnitaryValue = lineItem.PriceWithTax
                     });
                 }
 
@@ -256,15 +257,16 @@ namespace vc_module_MelhorEnvio.Core
             return ret;
         }
 
-        private Dictionary<OrderModel.ShipmentPackage, Models.CartOut> SendNotCorreios(VirtoCommerce.OrdersModule.Core.Model.Shipment pShipment, Store pStore, Models.CartIn cartIn)
+        private Dictionary<OrderModel.ShipmentPackage, Models.CartOut> SendNotCorreios(OrderModel.Shipment pShipment, Store pStore, Models.CartIn cartIn)
         {
             foreach (var item in pShipment.Items)
             {
+                var lineItem = pShipment.Items.FirstOrDefault(i => i.LineItemId == item.LineItemId).LineItem;
                 cartIn.Products.Add(new Models.CartIn.Product()
                 {
-                    Name = item.LineItem.Name,
+                    Name = lineItem.Name, // item.LineItem is null, workaround
                     Quantity = item.Quantity,
-                    UnitaryValue = item.LineItem.PriceWithTax
+                    UnitaryValue = lineItem.PriceWithTax //  item.LineItem is null, workaround
                 });
             }
             foreach (var Package in pShipment.Packages)
@@ -337,7 +339,7 @@ namespace vc_module_MelhorEnvio.Core
             return list;
         }
 
-        private List<Models.CalculateIn.Product> ToItems(ICollection<VirtoCommerce.OrdersModule.Core.Model.LineItem> pItems, FulfillmentCenter fulfillmentCenter)
+        private List<Models.CalculateIn.Product> ToItems(ICollection<OrderModel.LineItem> pItems, FulfillmentCenter fulfillmentCenter)
         {
             List<Models.CalculateIn.Product> list = new List<Models.CalculateIn.Product>();
             foreach (var item in pItems)

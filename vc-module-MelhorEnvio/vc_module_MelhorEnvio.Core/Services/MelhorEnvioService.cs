@@ -54,14 +54,25 @@ namespace vc_module_MelhorEnvio.Core
             return transation.Item2;
         }
 
-        public object Tracking(Models.OrdersIn pOrders)
+        public Models.TrackingOut Tracking(Models.TrackingIn pOrders)
         {
             if (string.IsNullOrEmpty(m_Access))
-                return default(object);
+                return default(Models.TrackingOut);
 
-            var transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.ErrorOut>(BuildUrl(C_Tracking), GetAut(), "POST", buildAgent(), pOrders);
+            var transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.TrackingOut>(BuildUrl(C_Tracking), GetAut(), "POST", buildAgent(), pOrders);
             if (isInvalidToken(transation.Item1))
-                transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.ErrorOut>(BuildUrl(C_Tracking), GetAut(), "POST", buildAgent(), pOrders);
+                transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.TrackingOut>(BuildUrl(C_Tracking), GetAut(), "POST", buildAgent(), pOrders);
+            return transation.Item2;
+        }
+
+        public Models.CheckoutOut Checkout(Models.CheckoutIn pOrders)
+        {
+            if (string.IsNullOrEmpty(m_Access))
+                return default(Models.CheckoutOut);
+
+            var transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.CheckoutOut>(BuildUrl(C_Tracking), GetAut(), "POST", buildAgent(), pOrders);
+            if (isInvalidToken(transation.Item1))
+                transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.CheckoutOut>(BuildUrl(C_Tracking), GetAut(), "POST", buildAgent(), pOrders);
             return transation.Item2;
         }
 

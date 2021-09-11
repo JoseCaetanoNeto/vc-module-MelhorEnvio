@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 
 namespace vc_module_MelhorEnvio.Core.Models
 {
@@ -9,7 +10,7 @@ namespace vc_module_MelhorEnvio.Core.Models
 
         public string message { get; set; }
 
-        public Dictionary<string,string[]> error { get; set; }
+        public JObject error { get; set; }
     }
 
 }

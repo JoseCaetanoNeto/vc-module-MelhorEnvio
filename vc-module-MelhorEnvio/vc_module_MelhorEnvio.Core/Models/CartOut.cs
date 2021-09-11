@@ -125,7 +125,7 @@ namespace vc_module_MelhorEnvio.Core.Models
         public string Format { get; set; }
 
         [JsonProperty("billed_weight")]
-        public int BilledWeight { get; set; }
+        public decimal BilledWeight { get; set; }
 
         [JsonProperty("receipt")]
         public bool Receipt { get; set; }

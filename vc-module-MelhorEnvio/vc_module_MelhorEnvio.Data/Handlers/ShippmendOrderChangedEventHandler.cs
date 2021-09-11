@@ -312,9 +312,9 @@ namespace vc_module_MelhorEnvio.Data.Handlers
                     var retMEApi = keyValue.Value;
                     if (retMEApi.errorOut != null)
                     {
-                        string[] errors = retMEApi.errorOut.error?.SelectMany(e => e.Value).ToArray();
+                        string errors = retMEApi.errorOut.error?.ToString();
                         if (errors != null)
-                            throw new Exception($"{retMEApi.errorOut.message} - {string.Join(",", errors)}");
+                            throw new Exception($"{retMEApi.errorOut.message} - {errors}");
                         else
                             throw new Exception(retMEApi.errorOut.message);
                     }

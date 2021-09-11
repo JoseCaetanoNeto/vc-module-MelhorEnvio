@@ -8,6 +8,8 @@ namespace vc_module_MelhorEnvio.Core
         public const string urlbaseSandbox = "https://sandbox.melhorenvio.com.br";
         public const string urlbase = "https://www.melhorenvio.com.br";
         public static string objectTypeRestrict => nameof(MelhorEnvioMethod) + "_restrict";
+        
+        public const int K_Company_CORREIOS = 1;
 
         public static class Security
         {
