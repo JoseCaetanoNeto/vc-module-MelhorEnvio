@@ -71,7 +71,7 @@ namespace vc_module_MelhorEnvio.Core.Models
         public int ServiceId { get; set; }
 
         [JsonProperty("agency_id")]
-        public object AgencyId { get; set; }
+        public int? AgencyId { get; set; }
 
         [JsonProperty("contract")]
         public string Contract { get; set; }

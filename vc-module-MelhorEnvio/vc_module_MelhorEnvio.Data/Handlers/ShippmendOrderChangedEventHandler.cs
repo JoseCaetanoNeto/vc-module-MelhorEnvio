@@ -305,20 +305,38 @@ namespace vc_module_MelhorEnvio.Data.Handlers
 
                 var fulfillmentCenters = _fulfillmentCenterService.GetByIdsAsync(FulfillmentCenterIds).GetAwaiter().GetResult();
 
-                var KeysValues = melhorEnvioMethod.SendMECart(pCustomerOrder.Number, pCustomerOrder.CustomerId, shipment, store, fulfillmentCenters.FirstOrDefault());
+                var KeysValues = melhorEnvioMethod.SendMECart(pCustomerOrder, shipment, store, fulfillmentCenters.FirstOrDefault());
                 foreach (var keyValue in KeysValues)
                 {
                     var package = keyValue.Key;
                     var retMEApi = keyValue.Value;
                     if (retMEApi.errorOut != null)
                     {
-                        string errors = retMEApi.errorOut.error?.ToString();
+                        string errors = retMEApi.errorOut.errors?.ToString();
                         if (errors != null)
                             throw new Exception($"{retMEApi.errorOut.message} - {errors}");
                         else
                             throw new Exception(retMEApi.errorOut.message);
                     }
                     package.BarCode = retMEApi.Id;
+                    shipment.Comment += $"CÓDIGO DE ENVIO E.M.: {retMEApi.Protocol} {Environment.NewLine}";
+                    if (retMEApi.AgencyId.HasValue)
+                    {
+                        var agency = melhorEnvioMethod.GetAgencyInfo(retMEApi.AgencyId.Value, store);
+                        shipment.Comment += $"AGÊNCIA: {agency.Name} {Environment.NewLine}" +
+                         $"{agency.CompanyName} {Environment.NewLine}" +
+                         Environment.NewLine +
+
+                         $"ENDEREÇO: {agency.address.address} " +
+                         (string.IsNullOrWhiteSpace(agency.address.Number) ? string.Empty : $", Nº { agency.address.Number} ") +
+                         (string.IsNullOrWhiteSpace(agency.address.Complement) ? string.Empty : $", {agency.address.Complement} ") +
+                         (string.IsNullOrWhiteSpace(agency.address.District) ? string.Empty : $", {agency.address.District} ") +
+                         (string.IsNullOrWhiteSpace(agency.address.City.city) ? string.Empty : $", {agency.address.City.city} ") +
+                         (string.IsNullOrWhiteSpace(agency.address.City.State.StateAbbr) ? string.Empty : $" - {agency.address.City.State.StateAbbr} ") +
+
+                         $"{Environment.NewLine} EMAIL: {agency.Email} {Environment.NewLine}" +
+                         $"TELEFONE: {agency.phone.phone} {Environment.NewLine}";
+                    }
                 }
 
             }

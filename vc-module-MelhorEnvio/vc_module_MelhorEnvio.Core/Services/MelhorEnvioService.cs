@@ -16,6 +16,7 @@ namespace vc_module_MelhorEnvio.Core
         const string C_generate = "{urlbase}/api/v2/me/shipment/generate";
         const string C_print = "{urlbase}/api/v2/me/shipment/print";
         const string C_Tracking = "{urlbase}/api/v2/me/shipment/tracking";
+        const string C_agencies = "{urlbase}/api/v2/me/shipment/agencies";
 
         readonly bool m_SandBox;
         readonly string m_applycation;
@@ -98,6 +99,17 @@ namespace vc_module_MelhorEnvio.Core
             var transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.PrintOut>(BuildUrl(C_print), GetAut(), "POST", buildAgent(), pOrders);
             if (isInvalidToken(transation.Item1))
                 transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.PrintOut>(BuildUrl(C_print), GetAut(), "POST", buildAgent(), pOrders);
+            return transation.Item2;
+        }
+
+        public Models.AgencieOut GetAgencyInfo(int pAgencia)
+        {
+            if (string.IsNullOrEmpty(m_Access))
+                return default(Models.AgencieOut);
+
+            var transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.AgencieOut>(BuildUrl(C_agencies) + "/" + pAgencia, GetAut(), "GET", buildAgent());
+            if (isInvalidToken(transation.Item1))
+                transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.AgencieOut>(BuildUrl(C_agencies) + "/" + pAgencia, GetAut(), "GET", buildAgent());
             return transation.Item2;
         }
 

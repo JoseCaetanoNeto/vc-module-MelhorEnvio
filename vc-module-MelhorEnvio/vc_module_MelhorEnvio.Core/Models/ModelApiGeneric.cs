@@ -10,7 +10,9 @@ namespace vc_module_MelhorEnvio.Core.Models
 
         public string message { get; set; }
 
-        public JObject error { get; set; }
+        public JObject errors { get; set; }
+
+        public string error { get; set; }
     }
 
 }

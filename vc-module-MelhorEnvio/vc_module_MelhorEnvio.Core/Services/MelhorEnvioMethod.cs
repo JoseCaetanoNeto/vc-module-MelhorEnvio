@@ -157,9 +157,13 @@ namespace vc_module_MelhorEnvio.Core
             return CalculateInt(pStore, pShipmentPostalCode, fulfillmentCenter.Address.PostalCode, ToItems(pItems, fulfillmentCenter));
         }
 
-        public Dictionary<OrderModel.ShipmentPackage, Models.CartOut> SendMECart(string pOrderNumber, string pCustomerId, OrderModel.Shipment pShipment, Store pStore, FulfillmentCenter pFulfillmentCenter)
+        public Dictionary<OrderModel.ShipmentPackage, Models.CartOut> SendMECart(OrderModel.CustomerOrder pCustomerOrder, OrderModel.Shipment pShipment, Store pStore, FulfillmentCenter pFulfillmentCenter)
         {
-            var customer = (Contact)GetCustomerAsync(pCustomerId).GetAwaiter().GetResult();
+            string orderNumber = pCustomerOrder.Number;
+            string customerId = pCustomerOrder.CustomerId;
+            var invoiceKey = pCustomerOrder.DynamicProperties.FirstOrDefault(p => p.Name == "InvoiceKey")?.Values.FirstOrDefault()?.Value;
+            
+            var customer = (Contact)GetCustomerAsync(customerId).GetAwaiter().GetResult();
             var Service = DecodeOptionName(pShipment.ShipmentMethodOption);
             var cartIn = new Models.CartIn()
             {
@@ -204,10 +208,10 @@ namespace vc_module_MelhorEnvio.Core
                 options = new Models.CartIn.Options()
                 {
                     InsuranceValue = pShipment.Items.Sum(i => i.LineItem.PriceWithTax), // valor do seguro, deve conter o valor de seguro do envio, que deve corresponder ao valor dos itens/produtos enviados e deverá bater com o valor da NF.
-                    //Invoice = new Models.CartIn.Invoice() {  Key = "" } // deve ser preenchida manualmente no paindel do mercado envio, antes de enviar
+                    Invoice = invoiceKey != null? new Models.CartIn.Invoice() {  Key = Convert.ToString(invoiceKey) } : null, // deve ser preenchida manualmente no paindel do mercado envio, antes de enviar
                     NonCommercial = NonCommercial, // indica se envio é não comercial
                     Platform = pStore.Name,// Nome da Plataforma
-                    Tags = new List<Models.CartIn.Tag>() { { new Models.CartIn.Tag() { tag = pOrderNumber } } }
+                    Tags = new List<Models.CartIn.Tag>() { { new Models.CartIn.Tag() { tag = orderNumber } } }
                 },
                 Products = new List<Models.CartIn.Product>(),
                 Volumes = new List<Models.CartIn.Volume>(),
@@ -315,6 +319,13 @@ namespace vc_module_MelhorEnvio.Core
                 return mes.Calculate(calc);
             }
             return new List<Models.CalculateOut>();
+        }
+
+        public Models.AgencieOut GetAgencyInfo(int pAgencyId, Store pStore)
+        {
+            MelhorEnvioService mes = new MelhorEnvioService(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
+            mes.onSaveNewToken = SaveToken;
+            return mes.GetAgencyInfo(pAgencyId);
         }
 
         private List<Models.CalculateIn.Product> ToItems(ICollection<LineItem> pItems, FulfillmentCenter fulfillmentCenter)

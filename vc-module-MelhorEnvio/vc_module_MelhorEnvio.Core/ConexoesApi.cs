@@ -86,15 +86,10 @@ namespace vc_module_MelhorEnvio.Core
                                         {
                                             string error = s.ReadToEnd();
                                             
-                                            JObject jObject = JsonConvert.DeserializeObject<JObject>(error);
-                                            T2 typeError;
-                                            if (jObject.ContainsKey("message"))
-                                                typeError = JsonConvert.DeserializeObject<T2>(error);
-                                            else
-                                            {
-                                                typeError = new T2();
-                                                typeError.message = Convert.ToString(jObject["error"]);
-                                            }
+                                            T2 typeError = JsonConvert.DeserializeObject<T2>(error);
+                                            if (string.IsNullOrWhiteSpace(typeError.message))
+                                                typeError.message = typeError.error;
+
                                             // injeta no retornos json's atuais class faze status_code, para pegar o código do http code e propriedade de erro
                                             typeError.status_code = (int)response.StatusCode;
 
