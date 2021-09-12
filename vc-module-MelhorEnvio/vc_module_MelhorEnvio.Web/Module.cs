@@ -47,16 +47,7 @@ namespace vc_module_MelhorEnvio.Web
             settingsRegistrar.RegisterSettingsForType(ModuleConstants.Settings.MelhorEnvio.Settings, nameof(MelhorEnvioMethod));
             settingsRegistrar.RegisterSettingsForType(ModuleConstants.Settings.MelhorEnvio.RestrictSettings, ModuleConstants.objectTypeRestrict);
 
-            // register permissions
-            var permissionsProvider = appBuilder.ApplicationServices.GetRequiredService<IPermissionsRegistrar>();
-            permissionsProvider.RegisterPermissions(ModuleConstants.Security.Permissions.AllPermissions.Select(x =>
-                new Permission()
-                {
-                    GroupName = "vcmoduleMelhorEnvio",
-                    ModuleId = ModuleInfo.Id,
-                    Name = x
-                }).ToArray());
-
+            // register ShippingMethod
             var shippingMethodsRegistrar = appBuilder.ApplicationServices.GetRequiredService<IShippingMethodsRegistrar>();
 
             var settingsManager = appBuilder.ApplicationServices.GetRequiredService<ISettingsManager>();

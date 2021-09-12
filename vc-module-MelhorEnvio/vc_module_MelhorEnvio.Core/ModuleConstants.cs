@@ -15,13 +15,7 @@ namespace vc_module_MelhorEnvio.Core
         {
             public static class Permissions
             {
-                public const string Access = "vcmoduleMelhorEnvio:access";
-                public const string Create = "vcmoduleMelhorEnvio:create";
-                public const string Read = "vcmoduleMelhorEnvio:read";
-                public const string Update = "vcmoduleMelhorEnvio:update";
-                public const string Delete = "vcmoduleMelhorEnvio:delete";
-
-                public static string[] AllPermissions { get; } = { Read, Create, Access, Update, Delete };
+                public static string[] AllPermissions { get; } = { };
             }
         }
 
