@@ -255,7 +255,7 @@ namespace vc_module_MelhorEnvio.Core
                     });
                 }
 
-                var retMe = mes.Inserir(cartIn);
+                var retMe = mes.InserirCart(cartIn);
                 ret.Add(Package, retMe);
             }
             return ret;
@@ -285,7 +285,7 @@ namespace vc_module_MelhorEnvio.Core
             }
             MelhorEnvioService mes = new MelhorEnvioService(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
             mes.onSaveNewToken = SaveToken;
-            var retMe = mes.Inserir(cartIn);
+            var retMe = mes.InserirCart(cartIn);
             var ret = new Dictionary<OrderModel.ShipmentPackage, Models.CartOut>(pShipment.Packages.Count);
             foreach (var Package in pShipment.Packages)
             {
