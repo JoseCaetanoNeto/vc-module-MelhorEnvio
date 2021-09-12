@@ -5,12 +5,11 @@ using System.Text;
 
 namespace vc_module_MelhorEnvio.Core.Models
 {
-    // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse); 
-
-    public class OrdersIn
+    public class GenerateIn
     {
         [JsonProperty("orders")]
         public List<string> Orders { get; set; }
     }
+
 
 }
