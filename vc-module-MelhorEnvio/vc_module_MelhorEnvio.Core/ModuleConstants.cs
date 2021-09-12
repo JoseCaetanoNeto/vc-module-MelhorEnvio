@@ -112,6 +112,22 @@ namespace vc_module_MelhorEnvio.Core
                     DefaultValue = ""
                 };
 
+                public static readonly SettingDescriptor EnableSyncJob = new SettingDescriptor
+                {
+                    Name = "vcmoduleMelhorEnvio.EnableSyncJob",
+                    GroupName = "vcmoduleMelhorEnvio|General",
+                    ValueType = SettingValueType.Boolean,
+                    DefaultValue = true
+                };
+
+                public static readonly SettingDescriptor CronSyncJob = new SettingDescriptor
+                {
+                    Name = "vcmoduleMelhorEnvio.CronSyncJob",
+                    GroupName = "vcmoduleMelhorEnvio|General",
+                    ValueType = SettingValueType.ShortText,
+                    DefaultValue = "0/15 * * * *"
+                };
+
                 public static IEnumerable<SettingDescriptor> Settings
                 {
                     get
@@ -128,6 +144,8 @@ namespace vc_module_MelhorEnvio.Core
                             SendDataOnShippingStatus,
                             SendDataOnOrderStatus,
                             Sandbox,
+                            EnableSyncJob,
+                            CronSyncJob
                         };
                     }
                 }

@@ -1,3 +1,4 @@
+using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,9 @@ using VirtoCommerce.Platform.Core.Security;
 using VirtoCommerce.Platform.Core.Settings;
 using VirtoCommerce.ShippingModule.Core.Services;
 using VirtoCommerce.StoreModule.Core.Services;
+using VirtoCommerce.Platform.Hangfire;
+using VirtoCommerce.Platform.Hangfire.Extensions;
+using vc_module_MelhorEnvio.Data.BackgroundJobs;
 
 namespace vc_module_MelhorEnvio.Web
 {
@@ -47,10 +51,21 @@ namespace vc_module_MelhorEnvio.Web
             settingsRegistrar.RegisterSettingsForType(ModuleConstants.Settings.MelhorEnvio.Settings, nameof(MelhorEnvioMethod));
             settingsRegistrar.RegisterSettingsForType(ModuleConstants.Settings.MelhorEnvio.RestrictSettings, ModuleConstants.objectTypeRestrict);
 
+
+            var recurringJobManager = appBuilder.ApplicationServices.GetService<IRecurringJobManager>();
+            var settingsManager = appBuilder.ApplicationServices.GetRequiredService<ISettingsManager>();
+
+            recurringJobManager.WatchJobSetting(
+                settingsManager,
+                new SettingCronJobBuilder()
+                    .SetEnablerSetting(ModuleConstants.Settings.MelhorEnvio.EnableSyncJob)
+                    .SetCronSetting(ModuleConstants.Settings.MelhorEnvio.CronSyncJob)
+                    .ToJob<TrackingJob>(x => x.Process())
+                    .Build());
+
             // register ShippingMethod
             var shippingMethodsRegistrar = appBuilder.ApplicationServices.GetRequiredService<IShippingMethodsRegistrar>();
 
-            var settingsManager = appBuilder.ApplicationServices.GetRequiredService<ISettingsManager>();
 
             shippingMethodsRegistrar.RegisterShippingMethod(() => new MelhorEnvioMethod(appBuilder.ApplicationServices.GetRequiredService<ISettingsManager>(), appBuilder.ApplicationServices.GetRequiredService<IStoreService>(), appBuilder.ApplicationServices.GetRequiredService<IFulfillmentCenterService>(), appBuilder.ApplicationServices.GetRequiredService<IMemberService>(), appBuilder.ApplicationServices.GetRequiredService<UserManager<ApplicationUser>>()));
 

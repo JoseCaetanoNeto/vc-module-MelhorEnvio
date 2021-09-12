@@ -27,6 +27,14 @@
         "title": "sandbox",
         "description": ""
       },
+      "EnableSyncJob": {
+        "title": "Enable Sync Job for Tracking shippements",
+        "description": ""
+      },
+      "CronSyncJob": {
+        "title": "Cron expression for processing job execution",
+        "description": "The value is a regular CRON expression.\nTo run task every X minutes please use \"0/x * * * *\".\nTo run it every X hours at 00 minutes use \"0 */X * * *\". You can also specify minutes: \"15 */x * * *\"\nTo run it every X days at midnight use \"0 0 */x * *\""
+      },
       "client_id": {
         "title": "client_id",
         "description": ""
