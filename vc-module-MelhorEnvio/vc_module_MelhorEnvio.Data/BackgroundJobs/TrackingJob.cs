@@ -112,7 +112,7 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
 
                             var tracking = resultTracking[queryPackage.OuterId];
 
-                            if (tracking.Tracking != Package.TrackingCode)
+                            if ((tracking.Tracking??string.Empty) != (Package.TrackingCode??string.Empty))
                             {
                                 Shipment.Comment += $"{Environment.NewLine}PROTOCOL: {Package.Protocol} -> TRACKING CODE: {tracking.Tracking} {Environment.NewLine}";
                                 Package.TrackingCode = tracking.Tracking;
