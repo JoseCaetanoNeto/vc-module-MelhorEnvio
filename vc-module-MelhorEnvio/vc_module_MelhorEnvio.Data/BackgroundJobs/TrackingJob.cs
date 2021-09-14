@@ -184,7 +184,7 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
 
             static void CancelShipmentPackage(Shipment Shipment, ShipmentPackage2 Package)
             {
-                Shipment.Comment += $"{Environment.NewLine}PROTOCOL: {Package.Protocol} - CANCELED {Environment.NewLine}";
+                Shipment.Comment += $"{Environment.NewLine}PROTOCOL: {Package.Protocol} - CANCELED {Environment.NewLine}{Environment.NewLine}";
                 Shipment.Status = K_NewStatus;
                 Package.TrackingCode = string.Empty;
                 Package.OuterId = string.Empty;
