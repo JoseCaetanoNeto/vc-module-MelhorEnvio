@@ -226,6 +226,15 @@ namespace vc_module_MelhorEnvio.Core
             }
         }
 
+        public Models.TrackingOut TrackingOrders(Store pStore, List<string> pOrders)
+        {
+            var orders = new Models.TrackingIn() { Orders = pOrders };
+            MelhorEnvioService mes = new MelhorEnvioService(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
+            mes.onSaveNewToken = SaveToken;
+            var trackings = mes.Tracking(orders);
+            return trackings;
+        }
+
         private Dictionary<OrderModel.ShipmentPackage, Models.CartOut> SendCorreios(OrderModel.Shipment pShipment, Store pStore, Models.CartIn cartIn)
         {
             MelhorEnvioService mes = new MelhorEnvioService(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());

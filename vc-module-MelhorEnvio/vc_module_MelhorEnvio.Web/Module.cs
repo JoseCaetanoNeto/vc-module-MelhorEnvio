@@ -8,13 +8,17 @@ using Microsoft.Extensions.DependencyInjection;
 using vc_module_MelhorEnvio.Core;
 using vc_module_MelhorEnvio.Data.BackgroundJobs;
 using vc_module_MelhorEnvio.Data.Handlers;
+using vc_module_MelhorEnvio.Data.Model;
 using vc_module_MelhorEnvio.Data.Repositories;
 using vc_module_MelhorEnvio.Web.Validation;
 using VirtoCommerce.CustomerModule.Core.Services;
 using VirtoCommerce.InventoryModule.Core.Services;
 using VirtoCommerce.OrdersModule.Core.Events;
 using VirtoCommerce.OrdersModule.Core.Model;
+using VirtoCommerce.OrdersModule.Data.Model;
+using VirtoCommerce.OrdersModule.Data.Repositories;
 using VirtoCommerce.Platform.Core.Bus;
+using VirtoCommerce.Platform.Core.Common;
 using VirtoCommerce.Platform.Core.Modularity;
 using VirtoCommerce.Platform.Core.Security;
 using VirtoCommerce.Platform.Core.Settings;
@@ -32,17 +36,17 @@ namespace vc_module_MelhorEnvio.Web
         public void Initialize(IServiceCollection serviceCollection)
         {
             // initialize DB
-            serviceCollection.AddDbContext<vcmoduleMelhorEnvioDbContext>((provider, options) =>
+            serviceCollection.AddDbContext<ShipmentPackage2DbContext>((provider, options) =>
            {
                var configuration = provider.GetRequiredService<IConfiguration>();
                options.UseSqlServer(configuration.GetConnectionString(ModuleInfo.Id) ?? configuration.GetConnectionString("VirtoCommerce"));
            });
 
+            serviceCollection.AddTransient<IOrderRepository, OrderRepository2>();
             serviceCollection.AddTransient<ShippmendOrderChangedEventHandler>();
             serviceCollection.AddTransient<IValidator<Shipment>, MelhorEnvioValidator>();
 
             // TODO:
-            // serviceCollection.AddTransient<IvcmoduleMelhorEnvioRepository, vcmoduleMelhorEnvioRepository>();
             // serviceCollection.AddTransient<Func<IvcmoduleMelhorEnvioRepository>>(provider => () => provider.CreateScope().ServiceProvider.GetRequiredService<IvcmoduleMelhorEnvioRepository>());
         }
 
@@ -76,10 +80,13 @@ namespace vc_module_MelhorEnvio.Web
             inProcessBus.RegisterHandler<OrderChangedEvent>((message, token) => appBuilder.ApplicationServices.GetService<ShippmendOrderChangedEventHandler>().Handle(message));
 
 
+            AbstractTypeFactory<ShipmentPackageEntity>.OverrideType<ShipmentPackageEntity, ShipmentPackage2Entity>();
+            AbstractTypeFactory<ShipmentPackage>.OverrideType<ShipmentPackage, ShipmentPackage2>();
+
             // ensure that all pending migrations are applied
             using (var serviceScope = appBuilder.ApplicationServices.CreateScope())
             {
-                using (var dbContext = serviceScope.ServiceProvider.GetRequiredService<vcmoduleMelhorEnvioDbContext>())
+                using (var dbContext = serviceScope.ServiceProvider.GetRequiredService<ShipmentPackage2DbContext>())
                 {
                     dbContext.Database.EnsureCreated();
                     dbContext.Database.Migrate();

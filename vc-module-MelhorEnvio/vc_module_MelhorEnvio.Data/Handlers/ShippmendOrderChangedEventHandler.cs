@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using vc_module_MelhorEnvio.Core;
+using vc_module_MelhorEnvio.Data.Model;
 using VirtoCommerce.InventoryModule.Core.Services;
 using VirtoCommerce.OrdersModule.Core.Events;
 using VirtoCommerce.OrdersModule.Core.Model;
@@ -308,7 +309,7 @@ namespace vc_module_MelhorEnvio.Data.Handlers
                 var KeysValues = melhorEnvioMethod.SendMECart(pCustomerOrder, shipment, store, fulfillmentCenters.FirstOrDefault());
                 foreach (var keyValue in KeysValues)
                 {
-                    var package = keyValue.Key;
+                    var package = keyValue.Key as ShipmentPackage2;
                     var retMEApi = keyValue.Value;
                     if (retMEApi.errorOut != null)
                     {
@@ -318,7 +319,8 @@ namespace vc_module_MelhorEnvio.Data.Handlers
                         else
                             throw new Exception(retMEApi.errorOut.message);
                     }
-                    package.BarCode = retMEApi.Id;
+                    package.OuterId = retMEApi.Id;
+                    package.Protocol = retMEApi.Protocol;
                     shipment.Comment += $"CÓDIGO DE ENVIO E.M.: {retMEApi.Protocol} {Environment.NewLine}";
                     if (retMEApi.AgencyId.HasValue)
                     {
@@ -334,7 +336,7 @@ namespace vc_module_MelhorEnvio.Data.Handlers
                          (string.IsNullOrWhiteSpace(agency.address.City.city) ? string.Empty : $", {agency.address.City.city} ") +
                          (string.IsNullOrWhiteSpace(agency.address.City.State.StateAbbr) ? string.Empty : $" - {agency.address.City.State.StateAbbr} ") +
 
-                         $"{Environment.NewLine} EMAIL: {agency.Email} {Environment.NewLine}" +
+                         $"{Environment.NewLine}EMAIL: {agency.Email} {Environment.NewLine}" +
                          $"TELEFONE: {agency.phone.phone} {Environment.NewLine}";
                     }
                 }
