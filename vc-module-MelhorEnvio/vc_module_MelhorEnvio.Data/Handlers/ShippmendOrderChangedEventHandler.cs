@@ -321,7 +321,7 @@ namespace vc_module_MelhorEnvio.Data.Handlers
                     }
                     package.OuterId = retMEApi.Id;
                     package.Protocol = retMEApi.Protocol;
-                    shipment.Comment += $"CÓDIGO DE ENVIO E.M.: {retMEApi.Protocol} {Environment.NewLine}";
+                    shipment.Comment += $"PROTOCOL: {retMEApi.Protocol} {Environment.NewLine}";
                     if (retMEApi.AgencyId.HasValue)
                     {
                         var agency = melhorEnvioMethod.GetAgencyInfo(retMEApi.AgencyId.Value, store);
@@ -337,7 +337,7 @@ namespace vc_module_MelhorEnvio.Data.Handlers
                          (string.IsNullOrWhiteSpace(agency.address.City.State.StateAbbr) ? string.Empty : $" - {agency.address.City.State.StateAbbr} ") +
 
                          $"{Environment.NewLine}EMAIL: {agency.Email} {Environment.NewLine}" +
-                         $"TELEFONE: {agency.phone.phone} {Environment.NewLine}";
+                         $"TELEFONE: {agency.phone.phone} {Environment.NewLine}{Environment.NewLine}";
                     }
                 }
 

@@ -14,13 +14,6 @@
       }
     }
   },
-  "permissions": {
-    "vcmoduleMelhorEnvio:access": "Open vcmoduleMelhorEnvio menu",
-    "vcmoduleMelhorEnvio:create": "Create vcmoduleMelhorEnvio related data",
-    "vcmoduleMelhorEnvio:read": "View vcmoduleMelhorEnvio related data",
-    "vcmoduleMelhorEnvio:update": "Update vcmoduleMelhorEnvio related data",
-    "vcmoduleMelhorEnvio:delete": "Delete vcmoduleMelhorEnvio related data"
-  },
   "settings": {
     "vcmoduleMelhorEnvio": {
       "sandbox": {

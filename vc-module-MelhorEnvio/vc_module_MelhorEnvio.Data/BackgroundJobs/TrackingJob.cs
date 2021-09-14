@@ -14,6 +14,8 @@ using VirtoCommerce.ShippingModule.Core.Model.Search;
 using VirtoCommerce.ShippingModule.Core.Services;
 using VirtoCommerce.StoreModule.Core.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using VirtoCommerce.OrdersModule.Core.Model;
 
 namespace vc_module_MelhorEnvio.Data.BackgroundJobs
 {
@@ -23,11 +25,14 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
 
         private const string K_NewStatus = "New";
         private const string k_SendStatus = "Send";
+        private const string k_PaidStatus = "Paid";
 
         private const string k_ReadyToSendStatus = "ReadyToSend";
 
         private const string k_SentOrderStatus = "Sent";
+        private const string k_ProcessingOrderStatus = "Processing";
         private const string k_PartiallySentOrderStatus = "PartiallySent";
+        private const string k_ReadyToSendOrderStatus = "ReadyToSend";
         private const string K_CompletedOrderStatus = "Completed";
 
         private readonly ILogger _log;
@@ -85,6 +90,8 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
                         OuterId = p.OuterId
                     }).ToArrayAsync();
 
+                    List<CustomerOrder> customerOrderToUpdate = new List<CustomerOrder>();
+
                     if (queryPackages.Length > 0)
                     {
                         var store = await _storeService.GetByIdAsync(activePaymentMethod.StoreId);
@@ -107,24 +114,29 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
                             if (!resultTracking.ContainsKey(queryPackage.OuterId))
                             {
                                 CancelShipmentPackage(Shipment, Package);
+                                if (!customerOrderToUpdate.Contains(CustomerOrde)) customerOrderToUpdate.Add(CustomerOrde);
+
                                 continue;
                             }
 
                             var tracking = resultTracking[queryPackage.OuterId];
 
-                            if ((tracking.Tracking??string.Empty) != (Package.TrackingCode??string.Empty))
+                            if ((tracking.Tracking ?? string.Empty) != (Package.TrackingCode ?? string.Empty))
                             {
-                                Shipment.Comment += $"{Environment.NewLine}PROTOCOL: {Package.Protocol} -> TRACKING CODE: {tracking.Tracking} {Environment.NewLine}";
+                                Shipment.Comment += $"PROTOCOL: {Package.Protocol} ->TRACK: {tracking.Tracking} {Environment.NewLine}";
                                 Package.TrackingCode = tracking.Tracking;
+                                if (!customerOrderToUpdate.Contains(CustomerOrde)) customerOrderToUpdate.Add(CustomerOrde);
                             }
 
                             if (tracking.ExpiredAt.HasValue)
                             {
                                 CancelShipmentPackage(Shipment, Package);
+                                if (!customerOrderToUpdate.Contains(CustomerOrde)) customerOrderToUpdate.Add(CustomerOrde);
                             }
                             else if (tracking.CanceledAt.HasValue)
                             {
                                 CancelShipmentPackage(Shipment, Package);
+                                if (!customerOrderToUpdate.Contains(CustomerOrde)) customerOrderToUpdate.Add(CustomerOrde);
                             }
                             else if (tracking.DeliveredAt.HasValue && Package.PackageState != K_DeliveryPackageState)
                             {
@@ -133,6 +145,7 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
                                 {
                                     CustomerOrde.Status = K_CompletedOrderStatus;
                                 }
+                                if (!customerOrderToUpdate.Contains(CustomerOrde)) customerOrderToUpdate.Add(CustomerOrde);
                             }
                             else if (tracking.PostedAt.HasValue && Package.PackageState != k_SendStatus)
                             {
@@ -146,17 +159,30 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
                                 {
                                     CustomerOrde.Status = k_PartiallySentOrderStatus;
                                 }
+                                if (!customerOrderToUpdate.Contains(CustomerOrde)) customerOrderToUpdate.Add(CustomerOrde);
                             }
+                            else if (tracking.PaidAt.HasValue && string.IsNullOrWhiteSpace(Package.PackageState))
+                            {
+                                var list = new List<string>() { { k_PaidStatus } };
+                                Package.PackageState = k_PaidStatus;
+                                if (CustomerOrde.Status == k_ProcessingOrderStatus && Shipment.Packages.All(s => list.Contains((s as ShipmentPackage2).PackageState)))
+                                {
+                                    CustomerOrde.Status = k_ReadyToSendOrderStatus;
+                                }
+                                if (!customerOrderToUpdate.Contains(CustomerOrde)) customerOrderToUpdate.Add(CustomerOrde);
+                            }
+
                         }
                         // save changes
-                        await _customerOrderService.SaveChangesAsync(CustomerOrdes);
+                        if (customerOrderToUpdate.Count > 0)
+                            await _customerOrderService.SaveChangesAsync(customerOrderToUpdate.ToArray());
                     }
                 }
             }
 
             _log.LogTrace($"Complete processing TrackingJob job");
 
-            static void CancelShipmentPackage(VirtoCommerce.OrdersModule.Core.Model.Shipment Shipment, ShipmentPackage2 Package)
+            static void CancelShipmentPackage(Shipment Shipment, ShipmentPackage2 Package)
             {
                 Shipment.Comment += $"{Environment.NewLine}PROTOCOL: {Package.Protocol} - CANCELED {Environment.NewLine}";
                 Shipment.Status = K_NewStatus;

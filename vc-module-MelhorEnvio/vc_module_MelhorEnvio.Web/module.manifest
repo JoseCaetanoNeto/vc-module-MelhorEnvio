@@ -13,10 +13,10 @@
       <dependency id="VirtoCommerce.Store" version="3.21.0" />
     </dependencies>
 
-    <title>vc-module-MelhorEnvio</title>
+    <title>Melhor Envio gateway</title>
     <description>Enter your module description here.</description>
     <authors>
-        <author>jose_</author>
+        <author>jose_caetano_neto</author>
     </authors>
     <owners>
       <owner></owner>
