@@ -3,6 +3,7 @@ using System.Linq;
 using vc_module_MelhorEnvio.Core;
 using VirtoCommerce.OrdersModule.Core.Model;
 using VirtoCommerce.OrdersModule.Core.Services;
+using VirtoCommerce.PaymentModule.Core.Model;
 
 namespace vc_module_MelhorEnvio.Web.Validation
 {
@@ -15,12 +16,20 @@ namespace vc_module_MelhorEnvio.Web.Validation
                 var order = pOrderService.GetByIdAsync(newShipmentRequest.CustomerOrderId).GetAwaiter().GetResult();
                 if (order != null)
                 {
-                    var Shipment = order.Shipments.FirstOrDefault(s => s.Id == newShipmentRequest.Id && s.ShipmentMethodCode == nameof(MelhorEnvioMethod) && MelhorEnvioMethod.DecodeOptionName(s.ShipmentMethodOption).CompanyID != ModuleConstants.K_Company_CORREIOS);
+                    var Shipment = order.Shipments.FirstOrDefault(s => s.Id == newShipmentRequest.Id && s.ShipmentMethodCode == nameof(MelhorEnvioMethod));
                     if (Shipment != null && Shipment.Status != newShipmentRequest.Status && newShipmentRequest.Status == ((MelhorEnvioMethod)Shipment.ShippingMethod).SendDataOnShippingStatus)
                     {
-                        var invoiceKey = order.DynamicProperties.FirstOrDefault(p => p.Name == ModuleConstants.K_InvoiceKey)?.Values.FirstOrDefault()?.Value;
-                        if (invoiceKey == null)
-                            context.AddFailure("Preencher o número da Nota fiscal (Dynamic properties -> InvoiceKey)! É obritatória para encomendas com envio com transportadores que não seja Correios");
+                        if (order.Total > order.InPayments.Where(p => p.PaymentStatus == PaymentStatus.Paid).Sum(p => p.Sum))
+                        {
+                            context.AddFailure("Para envio para transportadora é necessário que o Pedido esteja pago integralmente!");
+                        }
+
+                        if (MelhorEnvioMethod.DecodeOptionName(Shipment.ShipmentMethodOption).CompanyID != ModuleConstants.K_Company_CORREIOS)
+                        {
+                            var invoiceKey = order.DynamicProperties.FirstOrDefault(p => p.Name == ModuleConstants.K_InvoiceKey)?.Values.FirstOrDefault()?.Value;
+                            if (invoiceKey == null)
+                                context.AddFailure("Preencher o número da Nota fiscal (Dynamic properties -> InvoiceKey)! É obritatória para encomendas com envio com transportadores que não seja Correios");
+                        }
                     }
                 }
             });
