@@ -110,7 +110,7 @@ namespace vc_module_MelhorEnvio.Data.Handlers
                 result.Add(new ActionJobArgument() { RunAction = UpdatePackages, changedEntry = changedEntry, TypeName = "OrderChanged", CustomerOrderId = changedEntry.NewEntry.Id });
             }
 
-            if (IsSendDataShippingStatus(changedEntry, ShipmentMethod_Id) || IsSendDataOrderStatus(changedEntry, ShipmentMethod_Id))
+            if (IsSendDataShippingStatus(changedEntry, ShipmentMethod_Id))
             {
                 result.Add(new ActionJobArgument() { RunAction = SendMECart, changedEntry = changedEntry, TypeName = "SendPackages", CustomerOrderId = changedEntry.NewEntry.Id });
             }
@@ -219,17 +219,6 @@ namespace vc_module_MelhorEnvio.Data.Handlers
             var oldStatusShipmentsCount = pChangedEntry.OldEntry.Shipments.Count(x => x.Status.EqualsInvariant(status));
             var newStatusShipmentsCount = pChangedEntry.NewEntry.Shipments.Count(x => x.Status.EqualsInvariant(status));
             return oldStatusShipmentsCount == 0 && newStatusShipmentsCount > 0;
-        }
-
-        private bool IsSendDataOrderStatus(GenericChangedEntry<CustomerOrder> pChangedEntry, string pShipmentMethod_Id)
-        {
-            string status = Convert.ToString(_settingsManager.GetObjectSettings(Core.ModuleConstants.Settings.MelhorEnvio.SendDataOnOrderStatus.Name, nameof(MelhorEnvioMethod), pShipmentMethod_Id));
-            if (string.IsNullOrEmpty(status))
-                return false;
-
-            var oldStatusOrder = pChangedEntry.OldEntry.Status.EqualsInvariant(status);
-            var newStatusOrder = pChangedEntry.NewEntry.Status.EqualsInvariant(status);
-            return !oldStatusOrder && newStatusOrder;
         }
 
         private static bool isChangedPostalCode(GenericChangedEntry<CustomerOrder> changedEntry)

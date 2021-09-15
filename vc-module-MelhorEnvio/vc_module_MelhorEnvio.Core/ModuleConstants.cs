@@ -11,6 +11,8 @@ namespace vc_module_MelhorEnvio.Core
         
         public const int K_Company_CORREIOS = 1;
 
+        public const string K_InvoiceKey = "InvoiceKey";
+
         public static class Security
         {
             public static class Permissions
@@ -51,14 +53,6 @@ namespace vc_module_MelhorEnvio.Core
                 public static readonly SettingDescriptor SendDataOnShippingStatus = new SettingDescriptor
                 {
                     Name = "vcmoduleMelhorEnvio.sendDataOnShippingStatus",
-                    GroupName = "vcmoduleMelhorEnvio|General",
-                    ValueType = SettingValueType.ShortText,
-                    DefaultValue = ""
-                };
-
-                public static readonly SettingDescriptor SendDataOnOrderStatus = new SettingDescriptor
-                {
-                    Name = "vcmoduleMelhorEnvio.sendDataOnOrderStatus",
                     GroupName = "vcmoduleMelhorEnvio|General",
                     ValueType = SettingValueType.ShortText,
                     DefaultValue = ""
@@ -142,7 +136,6 @@ namespace vc_module_MelhorEnvio.Core
                             NonCommercial,
                             Document,
                             SendDataOnShippingStatus,
-                            SendDataOnOrderStatus,
                             Sandbox,
                             EnableSyncJob,
                             CronSyncJob

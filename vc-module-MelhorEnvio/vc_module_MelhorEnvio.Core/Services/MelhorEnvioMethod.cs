@@ -61,6 +61,7 @@ namespace vc_module_MelhorEnvio.Core
                     ModuleConstants.Settings.MelhorEnvio.Document.DefaultValue.ToString());
             }
         }
+
         private string StateRegister
         {
             get
@@ -69,6 +70,7 @@ namespace vc_module_MelhorEnvio.Core
                     ModuleConstants.Settings.MelhorEnvio.StateRegister.DefaultValue.ToString());
             }
         }
+        
         private string CompanyDocument
         {
             get
@@ -95,6 +97,15 @@ namespace vc_module_MelhorEnvio.Core
                 bool.TryParse(Settings?.GetSettingValue(ModuleConstants.Settings.MelhorEnvio.NonCommercial.Name,
                     ModuleConstants.Settings.MelhorEnvio.NonCommercial.DefaultValue.ToString()), out ret);
                 return ret;
+            }
+        }
+
+        public string SendDataOnShippingStatus
+        {
+            get
+            {
+                return Settings?.GetSettingValue(ModuleConstants.Settings.MelhorEnvio.SendDataOnShippingStatus.Name,
+                    ModuleConstants.Settings.MelhorEnvio.SendDataOnShippingStatus.DefaultValue.ToString());
             }
         }
 
@@ -161,7 +172,7 @@ namespace vc_module_MelhorEnvio.Core
         {
             string orderNumber = pCustomerOrder.Number;
             string customerId = pCustomerOrder.CustomerId;
-            var invoiceKey = pCustomerOrder.DynamicProperties.FirstOrDefault(p => p.Name == "InvoiceKey")?.Values.FirstOrDefault()?.Value;
+            var invoiceKey = pCustomerOrder.DynamicProperties.FirstOrDefault(p => p.Name == ModuleConstants.K_InvoiceKey)?.Values.FirstOrDefault()?.Value;
             
             var customer = (Contact)GetCustomerAsync(customerId).GetAwaiter().GetResult();
             var Service = DecodeOptionName(pShipment.ShipmentMethodOption);
