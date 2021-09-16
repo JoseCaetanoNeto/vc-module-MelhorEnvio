@@ -246,6 +246,13 @@ namespace vc_module_MelhorEnvio.Core
             return trackings;
         }
 
+        public Models.CancelOut.Order CancelOrder(Store pStore, string pOrder, string pDescription)
+        {
+            MelhorEnvioService mes = new MelhorEnvioService(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
+            mes.onSaveNewToken = SaveToken;
+            return mes.Cancel(pOrder, pDescription);
+        }
+
         private Dictionary<OrderModel.ShipmentPackage, Models.CartOut> SendCorreios(OrderModel.Shipment pShipment, Store pStore, Models.CartIn cartIn)
         {
             MelhorEnvioService mes = new MelhorEnvioService(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());

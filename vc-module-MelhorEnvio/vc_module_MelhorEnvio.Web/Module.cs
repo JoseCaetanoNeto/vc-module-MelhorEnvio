@@ -44,6 +44,7 @@ namespace vc_module_MelhorEnvio.Web
 
             serviceCollection.AddTransient<IOrderRepository, OrderRepository2>();
             serviceCollection.AddTransient<ShippmendOrderChangedEventHandler>();
+            serviceCollection.AddTransient<ShippmendCancelOrderEventHandler>();
             serviceCollection.AddTransient<IValidator<Shipment>, MelhorEnvioValidator>();
 
             // TODO:
@@ -78,7 +79,7 @@ namespace vc_module_MelhorEnvio.Web
 
             var inProcessBus = appBuilder.ApplicationServices.GetService<IHandlerRegistrar>();
             inProcessBus.RegisterHandler<OrderChangedEvent>((message, token) => appBuilder.ApplicationServices.GetService<ShippmendOrderChangedEventHandler>().Handle(message));
-
+            inProcessBus.RegisterHandler<OrderChangedEvent>((message, token) => appBuilder.ApplicationServices.GetService<ShippmendCancelOrderEventHandler>().Handle(message));
 
             AbstractTypeFactory<ShipmentPackageEntity>.OverrideType<ShipmentPackageEntity, ShipmentPackage2Entity>();
             AbstractTypeFactory<ShipmentPackage>.OverrideType<ShipmentPackage, ShipmentPackage2>();

@@ -89,20 +89,9 @@ namespace vc_module_MelhorEnvio.Data.Handlers
             var paymentMethod = authorizePaymentMethods.Results.FirstOrDefault(s => s.TypeName == nameof(MelhorEnvioMethod));
             string ShipmentMethod_Id = paymentMethod?.Id;
 
-
-            if (IsOrderCanceled(changedEntry))
-            {
-                result.Add(new ActionJobArgument() { changedEntry = changedEntry, TypeName = "OrderCanceled", CustomerOrderId = changedEntry.NewEntry.Id });
-            }
-
             if (IsOrderPaid(changedEntry))
             {
                 result.Add(new ActionJobArgument() { changedEntry = changedEntry, TypeName = "OrderPaid", CustomerOrderId = changedEntry.NewEntry.Id });
-            }
-
-            if (IsOrderSent(changedEntry))
-            {
-                result.Add(new ActionJobArgument() { changedEntry = changedEntry, TypeName = "OrderSent", CustomerOrderId = changedEntry.NewEntry.Id });
             }
 
             if (IsShippingRecalc(changedEntry))
@@ -191,19 +180,6 @@ namespace vc_module_MelhorEnvio.Data.Handlers
             return oldPaidTotal != newPaidTotal && changedEntry.NewEntry.Total <= newPaidTotal;
         }
 
-        protected bool IsOrderCanceled(GenericChangedEntry<CustomerOrder> changedEntry)
-        {
-            var result = !changedEntry.OldEntry.IsCancelled && changedEntry.NewEntry.IsCancelled;
-            return result;
-        }
-
-        protected bool IsOrderSent(GenericChangedEntry<CustomerOrder> changedEntry)
-        {
-            var oldSentShipmentsCount = changedEntry.OldEntry.Shipments.Count(x => x.Status.EqualsInvariant("Send") || x.Status.EqualsInvariant("Sent"));
-            var newSentShipmentsCount = changedEntry.NewEntry.Shipments.Count(x => x.Status.EqualsInvariant("Send") || x.Status.EqualsInvariant("Sent"));
-            return oldSentShipmentsCount == 0 && newSentShipmentsCount > 0;
-        }
-
         private bool IsShippingRecalc(GenericChangedEntry<CustomerOrder> changedEntry)
         {
             var productchanges = GetProductChangesFor(changedEntry);
@@ -229,10 +205,10 @@ namespace vc_module_MelhorEnvio.Data.Handlers
         private bool UpdatePackages(CustomerOrder pCustomerOrder)
         {
             var shipments = pCustomerOrder.Shipments.Where(s => s.ShipmentMethodCode == nameof(MelhorEnvioMethod));
+            var store = _storeService.GetByIdAsync(pCustomerOrder.StoreId).GetAwaiter().GetResult();
             var Items = pCustomerOrder.Items;
             foreach (var shipment in shipments)
             {
-                var store = _storeService.GetByIdAsync(pCustomerOrder.StoreId).GetAwaiter().GetResult();
                 MelhorEnvioMethod melhorEnvioMethod = shipment.ShippingMethod as MelhorEnvioMethod;
 
                 var FulfillmentCenterIds = melhorEnvioMethod.getFulfillmentCenters(
