@@ -223,6 +223,7 @@ namespace vc_module_MelhorEnvio.Data.Handlers
                     return false;
 
                 shipment.Price = shipmentSelect.CustomPrice;
+                shipment.Items.Clear();
                 shipment.Packages = new List<ShipmentPackage>();
 
 
