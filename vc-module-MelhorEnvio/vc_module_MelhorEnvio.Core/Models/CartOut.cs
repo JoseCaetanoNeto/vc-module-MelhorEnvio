@@ -5,7 +5,7 @@ using System.Text;
 
 namespace vc_module_MelhorEnvio.Core.Models
 {
-    public class CartOut
+    public class CartOut: IErrorOut
     {
         public class Product
         {

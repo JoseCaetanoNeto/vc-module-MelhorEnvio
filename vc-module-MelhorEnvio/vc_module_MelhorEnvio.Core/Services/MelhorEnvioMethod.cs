@@ -158,12 +158,12 @@ namespace vc_module_MelhorEnvio.Core
             return retList;
         }
 
-        public List<Models.CalculateOut> Calculate(Store pStore, string pShipmentPostalCode, ICollection<OrderModel.LineItem> pItems, FulfillmentCenter fulfillmentCenter)
+        public Models.CalculateOut Calculate(Store pStore, string pShipmentPostalCode, ICollection<OrderModel.LineItem> pItems, FulfillmentCenter fulfillmentCenter)
         {
             return CalculateInt(pStore, pShipmentPostalCode, fulfillmentCenter.Address.PostalCode, ToItems(pItems, fulfillmentCenter));
         }
 
-        public List<Models.CalculateOut> Calculate(Store pStore, string pShipmentPostalCode, ICollection<LineItem> pItems, FulfillmentCenter fulfillmentCenter)
+        public Models.CalculateOut Calculate(Store pStore, string pShipmentPostalCode, ICollection<LineItem> pItems, FulfillmentCenter fulfillmentCenter)
         {
             return CalculateInt(pStore, pShipmentPostalCode, fulfillmentCenter.Address.PostalCode, ToItems(pItems, fulfillmentCenter));
         }
@@ -321,7 +321,7 @@ namespace vc_module_MelhorEnvio.Core
             return ret;
         }
 
-        private List<Models.CalculateOut> CalculateInt(Store pStore, string pShipmentPostalCode, string fulfillmentCenterPostalCode, List<Models.CalculateIn.Product> pItems)
+        private Models.CalculateOut CalculateInt(Store pStore, string pShipmentPostalCode, string fulfillmentCenterPostalCode, List<Models.CalculateIn.Product> pItems)
         {
             Models.CalculateIn calc = new Models.CalculateIn()
             {
@@ -345,7 +345,7 @@ namespace vc_module_MelhorEnvio.Core
                 mes.onSaveNewToken = SaveToken;
                 return mes.Calculate(calc);
             }
-            return new List<Models.CalculateOut>();
+            return new Models.CalculateOut();
         }
 
         public Models.AgencieOut GetAgencyInfo(int pAgencyId, Store pStore)
@@ -465,7 +465,7 @@ namespace vc_module_MelhorEnvio.Core
             return result;
         }
 
-        public static string BuildOptionName(Models.CalculateOut pItem)
+        public static string BuildOptionName(Models.CalculateOut.Item pItem)
         {
             return string.Join(" - ", string.Join(".", pItem.company.Id, pItem.Id), pItem.company.Name, pItem.Name);
         }

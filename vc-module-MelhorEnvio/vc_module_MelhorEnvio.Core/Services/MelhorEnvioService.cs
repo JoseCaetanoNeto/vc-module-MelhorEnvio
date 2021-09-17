@@ -37,15 +37,15 @@ namespace vc_module_MelhorEnvio.Core
             m_Access = pAccess;
         }
 
-        public List<Models.CalculateOut> Calculate(Models.CalculateIn pCalc)
+        public Models.CalculateOut Calculate(Models.CalculateIn pCalc)
         {
             if (string.IsNullOrEmpty(m_Access))
-                return default(List<Models.CalculateOut>);
+                return default(Models.CalculateOut);
 
-            var result = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, List<Models.CalculateOut>>(BuildUrl(C_Calculate), GetAut(), "POST", buildAgent(), pCalc);
-            if (isInvalidToken(result.Item1))
-                result = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, List<Models.CalculateOut>>(BuildUrl(C_Calculate), GetAut(), "POST", buildAgent(), pCalc);
-            return result.Item2;
+            var result = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.CalculateOut>(BuildUrl(C_Calculate), GetAut(), "POST", buildAgent(), pCalc);
+            if (isInvalidToken(result.errorOut))
+                result = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.CalculateOut>(BuildUrl(C_Calculate), GetAut(), "POST", buildAgent(), pCalc);
+            return result;
         }
 
         public Models.CartOut InserirCart(Models.CartIn pCart)
@@ -54,20 +54,20 @@ namespace vc_module_MelhorEnvio.Core
                 return default(Models.CartOut);
 
             var transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.CartOut>(BuildUrl(C_Inserir), GetAut(), "POST", buildAgent(), pCart);
-            if (isInvalidToken(transation.Item1))
+            if (isInvalidToken(transation.errorOut))
                 transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.CartOut>(BuildUrl(C_Inserir), GetAut(), "POST", buildAgent(), pCart);
-            return transation.Item2;
+            return transation;
         }
 
-        public Models.ErrorOut RemoveCart(string pOrdem)
+        public Models.RemoveCartOut RemoveCart(string pOrdem)
         {
             if (string.IsNullOrEmpty(m_Access))
-                return default(Models.ErrorOut);
+                return default(Models.RemoveCartOut);
 
-            var transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.ErrorOut>(BuildUrl(C_Inserir) + "/" + pOrdem, GetAut(), "DELETE", buildAgent());
-            if (isInvalidToken(transation.Item1))
-                transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.ErrorOut>(BuildUrl(C_Inserir) + "/" + pOrdem, GetAut(), "DELETE", buildAgent());
-            return transation.Item2;
+            var transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.RemoveCartOut>(BuildUrl(C_Inserir) + "/" + pOrdem, GetAut(), "DELETE", buildAgent());
+            if (isInvalidToken(transation.errorOut))
+                transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.RemoveCartOut>(BuildUrl(C_Inserir) + "/" + pOrdem, GetAut(), "DELETE", buildAgent());
+            return transation;
         }
 
         public Models.CheckoutOut Checkout(Models.CheckoutIn pOrders)
@@ -76,9 +76,9 @@ namespace vc_module_MelhorEnvio.Core
                 return default(Models.CheckoutOut);
 
             var transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.CheckoutOut>(BuildUrl(C_checkout), GetAut(), "POST", buildAgent(), pOrders);
-            if (isInvalidToken(transation.Item1))
+            if (isInvalidToken(transation.errorOut))
                 transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.CheckoutOut>(BuildUrl(C_checkout), GetAut(), "POST", buildAgent(), pOrders);
-            return transation.Item2;
+            return transation;
         }
 
         public Models.CancelOut.Order Cancel(string pOrdem, string pDescription)
@@ -97,10 +97,10 @@ namespace vc_module_MelhorEnvio.Core
             };
 
             var transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.CancelOut>(BuildUrl(C_Cancel), GetAut(), "POST", buildAgent(), cancel);
-            if (isInvalidToken(transation.Item1))
+            if (isInvalidToken(transation.errorOut))
                 transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.CancelOut>(BuildUrl(C_Cancel), GetAut(), "POST", buildAgent(), cancel);
 
-            return transation.Item2[pOrdem];
+            return transation[pOrdem];
         }
 
         public Models.TrackingOut Tracking(Models.TrackingIn pOrders)
@@ -109,9 +109,9 @@ namespace vc_module_MelhorEnvio.Core
                 return default(Models.TrackingOut);
 
             var transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.TrackingOut>(BuildUrl(C_Tracking), GetAut(), "POST", buildAgent(), pOrders);
-            if (isInvalidToken(transation.Item1))
+            if (isInvalidToken(transation.errorOut))
                 transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.TrackingOut>(BuildUrl(C_Tracking), GetAut(), "POST", buildAgent(), pOrders);
-            return transation.Item2;
+            return transation;
         }
 
         public Models.GenerateOut Generate(List<string> pOrders)
@@ -122,9 +122,9 @@ namespace vc_module_MelhorEnvio.Core
                 return default(Models.GenerateOut);
 
             var transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.GenerateOut>(BuildUrl(C_generate), GetAut(), "POST", buildAgent(), orders);
-            if (isInvalidToken(transation.Item1))
+            if (isInvalidToken(transation.errorOut))
                 transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.GenerateOut>(BuildUrl(C_generate), GetAut(), "POST", buildAgent(), orders);
-            return transation.Item2;
+            return transation;
         }
 
         public Models.PrintOut Print(Models.PrintIn pOrders)
@@ -133,9 +133,9 @@ namespace vc_module_MelhorEnvio.Core
                 return default(Models.PrintOut);
 
             var transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.PrintOut>(BuildUrl(C_print), GetAut(), "POST", buildAgent(), pOrders);
-            if (isInvalidToken(transation.Item1))
+            if (isInvalidToken(transation.errorOut))
                 transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.PrintOut>(BuildUrl(C_print), GetAut(), "POST", buildAgent(), pOrders);
-            return transation.Item2;
+            return transation;
         }
 
         public Models.AgencieOut GetAgencyInfo(int pAgencia)
@@ -144,9 +144,9 @@ namespace vc_module_MelhorEnvio.Core
                 return default(Models.AgencieOut);
 
             var transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.AgencieOut>(BuildUrl(C_agencies) + "/" + pAgencia, GetAut(), "GET", buildAgent());
-            if (isInvalidToken(transation.Item1))
+            if (isInvalidToken(transation.errorOut))
                 transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.AgencieOut>(BuildUrl(C_agencies) + "/" + pAgencia, GetAut(), "GET", buildAgent());
-            return transation.Item2;
+            return transation;
         }
 
         private bool isInvalidToken(Models.ErrorOut transation)

@@ -3,7 +3,7 @@ using System;
 
 namespace vc_module_MelhorEnvio.Core.Models
 {
-    public class AgencieOut
+    public class AgencieOut: IErrorOut
     {
         public class Country
         {
@@ -142,5 +142,7 @@ namespace vc_module_MelhorEnvio.Core.Models
 
         [JsonProperty("phone")]
         public Phone phone { get; set; }
+
+        public ErrorOut errorOut { get; set; }
     }
 }

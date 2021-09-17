@@ -5,8 +5,9 @@ using System.Text;
 
 namespace vc_module_MelhorEnvio.Core.Models
 {
-    public class CalculateOut
+    public class CalculateOut : List<CalculateOut.Item>, IErrorOut
     {
+        public ErrorOut errorOut { get; set; }
 
         public class DeliveryRange
         {
@@ -95,44 +96,47 @@ namespace vc_module_MelhorEnvio.Core.Models
             public string Picture { get; set; }
         }
 
-        [JsonProperty("id")]
-        public int Id { get; set; }
+        public class Item
+        {
 
-        [JsonProperty("name")]
-        public string Name { get; set; }
+            [JsonProperty("id")]
+            public int Id { get; set; }
 
-        [JsonProperty("price")]
-        public decimal Price { get; set; }
+            [JsonProperty("name")]
+            public string Name { get; set; }
 
-        [JsonProperty("custom_price")]
-        public decimal CustomPrice { get; set; }
+            [JsonProperty("price")]
+            public decimal Price { get; set; }
 
-        [JsonProperty("discount")]
-        public decimal Discount { get; set; }
+            [JsonProperty("custom_price")]
+            public decimal CustomPrice { get; set; }
 
-        [JsonProperty("currency")]
-        public string Currency { get; set; }
+            [JsonProperty("discount")]
+            public decimal Discount { get; set; }
 
-        [JsonProperty("delivery_time")]
-        public int DeliveryTime { get; set; }
+            [JsonProperty("currency")]
+            public string Currency { get; set; }
 
-        [JsonProperty("delivery_range")]
-        public DeliveryRange deliveryRange { get; set; }
+            [JsonProperty("delivery_time")]
+            public int DeliveryTime { get; set; }
 
-        [JsonProperty("custom_delivery_time")]
-        public int CustomDeliveryTime { get; set; }
+            [JsonProperty("delivery_range")]
+            public DeliveryRange deliveryRange { get; set; }
 
-        [JsonProperty("custom_delivery_range")]
-        public CustomDeliveryRange customDeliveryRange { get; set; }
+            [JsonProperty("custom_delivery_time")]
+            public int CustomDeliveryTime { get; set; }
 
-        [JsonProperty("packages")]
-        public List<Package> Packages { get; set; }
+            [JsonProperty("custom_delivery_range")]
+            public CustomDeliveryRange customDeliveryRange { get; set; }
 
-        [JsonProperty("additional_services")]
-        public AdditionalServices additionalServices { get; set; }
+            [JsonProperty("packages")]
+            public List<Package> Packages { get; set; }
 
-        [JsonProperty("company")]
-        public Company company { get; set; }
+            [JsonProperty("additional_services")]
+            public AdditionalServices additionalServices { get; set; }
+
+            [JsonProperty("company")]
+            public Company company { get; set; }
+        }
     }
-
 }

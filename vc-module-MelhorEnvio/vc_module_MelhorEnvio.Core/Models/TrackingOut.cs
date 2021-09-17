@@ -4,8 +4,10 @@ using System.Collections.Generic;
 
 namespace vc_module_MelhorEnvio.Core.Models
 {
-    public class TrackingOut : Dictionary<string, TrackingOut.TrackingItemOut>
+    public class TrackingOut : Dictionary<string, TrackingOut.TrackingItemOut>, IErrorOut
     {
+        public ErrorOut errorOut { get; set; }
+
         public class TrackingItemOut
         {
             [JsonProperty("id")]

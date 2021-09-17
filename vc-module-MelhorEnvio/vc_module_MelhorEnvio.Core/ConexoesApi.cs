@@ -23,7 +23,7 @@ namespace vc_module_MelhorEnvio.Core
         /// <returns>Efetua chamada POST/GET para uma determinada API</returns>
         /// </summary>
         /// <param name="pUrl"></param><param name="pAuthorization"></param><param name="pMethod">POST/GET</param><param name="pObjetoEntrada"></param>
-        public static Tuple<T2, T> EfetuarChamadaApi<T2, T>(string pUrl, string pAuthorization, string pMethod, string pAgent = null, object pObjetoEntrada = null) where T2 : Models.ErrorOut, new()
+        public static T EfetuarChamadaApi<T2, T>(string pUrl, string pAuthorization, string pMethod, string pAgent = null, object pObjetoEntrada = null) where T2 : Models.ErrorOut, new() where T : Models.IErrorOut, new()
         {
             string objEntradaSerializado = string.Empty;
             if (pObjetoEntrada != null)
@@ -85,7 +85,7 @@ namespace vc_module_MelhorEnvio.Core
                                         using (StreamReader s = new StreamReader(ex.Response.GetResponseStream()))
                                         {
                                             string error = s.ReadToEnd();
-                                            
+
                                             T2 typeError = JsonConvert.DeserializeObject<T2>(error);
                                             if (string.IsNullOrWhiteSpace(typeError.message))
                                                 typeError.message = typeError.error;
@@ -94,12 +94,10 @@ namespace vc_module_MelhorEnvio.Core
                                             typeError.status_code = (int)response.StatusCode;
 
                                             // inserta classe de erro no objeto 
-                                            string jsonInsert = $"{{errorOut:{JsonConvert.SerializeObject(typeError)}}}";
                                             if (objRetorno == null)
-                                                objRetorno = JsonConvert.DeserializeObject<T>(jsonInsert);
-                                            else
-                                                JsonConvert.PopulateObject(jsonInsert, objRetorno);
-                                            return new Tuple<T2, T>(typeError, objRetorno);
+                                                objRetorno = new T();
+                                            objRetorno.errorOut = typeError;
+                                            return objRetorno;
                                         }
                                 }
                             }
@@ -112,7 +110,7 @@ namespace vc_module_MelhorEnvio.Core
 
                 }
 
-                return new Tuple<T2, T>(default(T2), objRetorno);
+                return objRetorno;
             }
 
         }

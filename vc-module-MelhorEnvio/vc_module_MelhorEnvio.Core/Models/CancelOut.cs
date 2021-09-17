@@ -3,8 +3,10 @@ using System.Collections.Generic;
 
 namespace vc_module_MelhorEnvio.Core.Models
 {
-    public class CancelOut:Dictionary<string, CancelOut.Order>
+    public class CancelOut:Dictionary<string, CancelOut.Order>, IErrorOut
     {
+        public ErrorOut errorOut { get; set; }
+
         public class Order
         {
             [JsonProperty("canceled")]
