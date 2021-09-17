@@ -69,18 +69,14 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
             {
                 foreach (var activePaymentMethod in activePaymentMethods)
                 {
-                    //repository.DisableChangesTracking();
-                    //string status = Convert.ToString(_settingsManager.GetObjectSettings(ModuleConstants.Settings.MelhorEnvio.StateRegister.Name, nameof(MelhorEnvioMethod), activePaymentMethod.Id));
-                    //if (status == k_SendStatus)
-                    //continue;
+                    string status = Convert.ToString(_settingsManager.GetObjectSettings(ModuleConstants.Settings.MelhorEnvio.SendDataOnShippingStatus.Name, nameof(MelhorEnvioMethod), activePaymentMethod.Id));
                     var query = ((OrderRepository2)repository).ShipmentPackage2;
                     query = query.Where(
-                        s =>
-                        s.Shipment.CustomerOrder.StoreId == activePaymentMethod.StoreId
-                        /* && s.Shipment.Status == status */
-                        && s.Shipment.ShipmentMethodCode == nameof(MelhorEnvioMethod)
-                        && (s.OuterId != string.Empty && s.OuterId != null)
-                        && (s.PackageState != K_DeliveryPackageState));
+                        p =>
+                        p.Shipment.CustomerOrder.StoreId == activePaymentMethod.StoreId
+                        && p.Shipment.ShipmentMethodCode == nameof(MelhorEnvioMethod)
+                        // caso exista OuterID avalair status do pacote, caso não exista avalia status do Envio como todo, para contemplar situação onde colocou no status e não gerou identificado por crítica na api ou falha de comunicação
+                        && ((p.OuterId != string.Empty && p.OuterId != null && p.PackageState != K_DeliveryPackageState) || (p.OuterId == null && p.Shipment.Status == status)));
 
                     var queryPackages = await query.Select(p => new
                     {
@@ -99,7 +95,7 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
                         var CustomerOrdes = await _customerOrderService.GetByIdsAsync(arryCustomerOrdes);
                         var shippingMethod = CustomerOrdes.FirstOrDefault().Shipments.FirstOrDefault(s => s.ShipmentMethodCode == nameof(MelhorEnvioMethod)).ShippingMethod as MelhorEnvioMethod;
 
-                        var ME_Orders = queryPackages.Select(p => p.OuterId).ToList();
+                        var ME_Orders = queryPackages.Select(p => p.OuterId).Where( i => !string.IsNullOrEmpty(i)).ToList();
 
                         var resultTracking = shippingMethod.TrackingOrders(store, ME_Orders);
 
@@ -111,7 +107,7 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
                             var Package = Shipment.Packages.FirstOrDefault(p => p.Id == queryPackage.PackageId) as ShipmentPackage2;
 
                             // item cancelado, volta status
-                            if (!resultTracking.ContainsKey(queryPackage.OuterId))
+                            if (string.IsNullOrEmpty(queryPackage.OuterId) || !resultTracking.ContainsKey(queryPackage.OuterId))
                             {
                                 CancelShipmentPackage(Shipment, Package);
                                 if (!customerOrderToUpdate.Contains(CustomerOrde)) customerOrderToUpdate.Add(CustomerOrde);
@@ -184,10 +180,13 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
 
             static void CancelShipmentPackage(Shipment Shipment, ShipmentPackage2 Package)
             {
-                Shipment.Comment += $"{Environment.NewLine}PROTOCOL: {Package.Protocol} - CANCELED {Environment.NewLine}{Environment.NewLine}";
                 Shipment.Status = K_NewStatus;
-                Package.TrackingCode = string.Empty;
-                Package.OuterId = string.Empty;
+                if (!string.IsNullOrEmpty(Package.OuterId))
+                {
+                    Shipment.Comment += $"{Environment.NewLine}PROTOCOL: {Package.Protocol} - CANCELED {Environment.NewLine}{Environment.NewLine}";
+                    Package.TrackingCode = null;
+                    Package.OuterId = null;
+                }
             }
         }
     }
