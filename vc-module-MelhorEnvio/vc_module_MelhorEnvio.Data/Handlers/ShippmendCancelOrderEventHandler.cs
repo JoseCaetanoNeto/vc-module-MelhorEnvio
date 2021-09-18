@@ -64,7 +64,7 @@ namespace vc_module_MelhorEnvio.Data.Handlers
             var isOrderCancelled = !changedEntry.OldEntry.IsCancelled && changedEntry.NewEntry.IsCancelled;
             if (isOrderCancelled)
             {
-                toCancelShipments = changedEntry.NewEntry.Shipments?.Where(s => s.ShipmentMethodCode == nameof(MelhorEnvioMethod)).ToList();
+                toCancelShipments = changedEntry.NewEntry.Shipments?.Where(s => s.ShipmentMethodCode == nameof(MelhorEnvioMethod) && !s.IsCancelled).ToList();
             }
             else
             {
