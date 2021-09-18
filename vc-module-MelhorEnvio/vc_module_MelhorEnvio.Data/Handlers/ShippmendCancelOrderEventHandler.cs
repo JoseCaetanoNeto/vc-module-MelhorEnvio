@@ -125,15 +125,20 @@ namespace vc_module_MelhorEnvio.Data.Handlers
             var ret = melhorEnvioMethod.CancelOrder(pStore, pShipmentPackageToCancel.OuterId, pCancelReason);
             if (ret != null)
             {
-                if (ret.Canceled)
-                {
-                    if (!pShipment.CancelledDate.HasValue)
-                        pShipment.CancelledDate = DateTime.Now;
-                    pShipment.IsCancelled = true;
-                    pShipment.Comment += $"{Environment.NewLine}PROTOCOL: {pShipmentPackageToCancel.Protocol} - CANCELAMENTO DO ENVIO FEITO COM SUCESSO {Environment.NewLine}";
+                if ((ret.errorOut == null || ret.errorOut.status_code == 0) && ret.ContainsKey(pShipmentPackageToCancel.OuterId))
+                { 
+                    if (ret[pShipmentPackageToCancel.OuterId].Canceled)
+                    {
+                        if (!pShipment.CancelledDate.HasValue)
+                            pShipment.CancelledDate = DateTime.Now;
+                        pShipment.IsCancelled = true;
+                        pShipment.Comment += $"{Environment.NewLine}PROTOCOL: {pShipmentPackageToCancel.Protocol} - CANCELAMENTO DO ENVIO FEITO COM SUCESSO {Environment.NewLine}";
+                    }
+                    else
+                        pShipment.Comment += $"{Environment.NewLine}PROTOCOL: {pShipmentPackageToCancel.Protocol} - NÃO FOI POSSÍVEL CANCELAR - ITEM JÁ ENVIADO {Environment.NewLine}";
                 }
                 else
-                    pShipment.Comment += $"{Environment.NewLine}PROTOCOL: {pShipmentPackageToCancel.Protocol} - NÃO FOI POSSÍVEL CANCELAR - ITEM JÁ ENVIADO {Environment.NewLine}";
+                    pShipment.Comment += $"{Environment.NewLine}PROTOCOL: {pShipmentPackageToCancel.Protocol} - NÃO FOI POSSÍVEL CANCELAR - {ret.errorOut?.message} {Environment.NewLine}";
             }
         }
     }

@@ -246,11 +246,35 @@ namespace vc_module_MelhorEnvio.Core
             return trackings;
         }
 
-        public Models.CancelOut.Order CancelOrder(Store pStore, string pOrder, string pDescription)
+        public Models.CancelOut CancelOrder(Store pStore, string pOrder, string pDescription)
         {
             MelhorEnvioService mes = new MelhorEnvioService(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
             mes.onSaveNewToken = SaveToken;
             return mes.Cancel(pOrder, pDescription);
+        }
+
+        public Models.AgencieOut GetAgencyInfo(int pAgencyId, Store pStore)
+        {
+            MelhorEnvioService mes = new MelhorEnvioService(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
+            mes.onSaveNewToken = SaveToken;
+            return mes.GetAgencyInfo(pAgencyId);
+        }
+
+        public List<string> getFulfillmentCenters(List<string> ShipmentsWarehouseLocation, List<string> ItemsFulfillmentLocationCode, string MainFulfillmentCenterId)
+        {
+            var FulfillmentCenterIds = ShipmentsWarehouseLocation;
+
+            if (FulfillmentCenterIds == null || FulfillmentCenterIds.Count == 0)
+            {
+                FulfillmentCenterIds = ItemsFulfillmentLocationCode;
+            }
+
+            if (FulfillmentCenterIds == null || FulfillmentCenterIds.Count == 0)
+            {
+                FulfillmentCenterIds = new List<string>() { MainFulfillmentCenterId };
+            }
+
+            return FulfillmentCenterIds;
         }
 
         private Dictionary<OrderModel.ShipmentPackage, Models.CartOut> SendCorreios(OrderModel.Shipment pShipment, Store pStore, Models.CartIn cartIn)
@@ -348,13 +372,6 @@ namespace vc_module_MelhorEnvio.Core
             return new Models.CalculateOut();
         }
 
-        public Models.AgencieOut GetAgencyInfo(int pAgencyId, Store pStore)
-        {
-            MelhorEnvioService mes = new MelhorEnvioService(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
-            mes.onSaveNewToken = SaveToken;
-            return mes.GetAgencyInfo(pAgencyId);
-        }
-
         private List<Models.CalculateIn.Product> ToItems(ICollection<LineItem> pItems, FulfillmentCenter fulfillmentCenter)
         {
             List<Models.CalculateIn.Product> list = new List<Models.CalculateIn.Product>();
@@ -399,23 +416,6 @@ namespace vc_module_MelhorEnvio.Core
             return list;
         }
 
-        public List<string> getFulfillmentCenters(List<string> ShipmentsWarehouseLocation, List<string> ItemsFulfillmentLocationCode, string MainFulfillmentCenterId)
-        {
-            var FulfillmentCenterIds = ShipmentsWarehouseLocation;
-
-            if (FulfillmentCenterIds == null || FulfillmentCenterIds.Count == 0)
-            {
-                FulfillmentCenterIds = ItemsFulfillmentLocationCode;
-            }
-
-            if (FulfillmentCenterIds == null || FulfillmentCenterIds.Count == 0)
-            {
-                FulfillmentCenterIds = new List<string>() { MainFulfillmentCenterId };
-            }
-
-            return FulfillmentCenterIds;
-        }
-
         private double ConvertToKg(decimal? weight, string weightUnit)
         {
             if (!weight.HasValue)
@@ -447,7 +447,7 @@ namespace vc_module_MelhorEnvio.Core
             _settingsManager.SeveObjectSettings(ModuleConstants.Settings.MelhorEnvio.Token.Name, ModuleConstants.objectTypeRestrict, Id, newAccessToken);
         }
 
-        async Task<Member> GetCustomerAsync(string customerId)
+        private async Task<Member> GetCustomerAsync(string customerId)
         {
             // Try to find contact
             var result = await _memberService.GetByIdAsync(customerId);

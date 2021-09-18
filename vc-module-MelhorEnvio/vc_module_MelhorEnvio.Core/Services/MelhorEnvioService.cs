@@ -81,10 +81,10 @@ namespace vc_module_MelhorEnvio.Core
             return transation;
         }
 
-        public Models.CancelOut.Order Cancel(string pOrdem, string pDescription)
+        public Models.CancelOut Cancel(string pOrdem, string pDescription)
         {
             if (string.IsNullOrEmpty(m_Access))
-                return default(Models.CancelOut.Order);
+                return default(Models.CancelOut);
 
             Models.CancelIn cancel = new Models.CancelIn()
             {
@@ -100,7 +100,7 @@ namespace vc_module_MelhorEnvio.Core
             if (isInvalidToken(transation.errorOut))
                 transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.CancelOut>(BuildUrl(C_Cancel), GetAut(), "POST", buildAgent(), cancel);
 
-            return transation[pOrdem];
+            return transation;
         }
 
         public Models.TrackingOut Tracking(Models.TrackingIn pOrders)

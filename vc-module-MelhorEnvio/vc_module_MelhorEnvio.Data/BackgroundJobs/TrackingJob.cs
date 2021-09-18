@@ -120,6 +120,12 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
 
                         var resultTracking = shippingMethod.TrackingOrders(store, ME_Orders);
 
+                        if (resultTracking.errorOut != null && resultTracking.errorOut.status_code != 0)
+                        {
+                            _log.LogTrace($"Error - resultTracking: {resultTracking.errorOut.message}");
+                            continue;
+                        }
+
                         // update changes
                         foreach (var queryPackage in queryPackages)
                         {
