@@ -161,6 +161,7 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
                                 if (Shipment.Packages.All(s => (s as ShipmentPackage2).PackageState == K_DeliveryPackageState))
                                 {
                                     CustomerOrde.Status = K_CompletedOrderStatus;
+                                    Shipment.Comment += $"PROTOCOL: {Package.Protocol} - DELIVERED {Environment.NewLine}";
                                     await TryToSendOrderNotificationsAsync(new OrderNotificationJobArgument[] { new OrderNotificationJobArgument
                                     {
                                         CustomerOrderId = queryPackage.CustomerOrderId,
