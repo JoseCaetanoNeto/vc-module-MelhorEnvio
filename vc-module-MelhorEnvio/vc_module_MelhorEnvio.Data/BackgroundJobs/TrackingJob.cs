@@ -16,6 +16,16 @@ using VirtoCommerce.StoreModule.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using VirtoCommerce.OrdersModule.Core.Model;
+using VirtoCommerce.NotificationsModule.Core.Services;
+using VirtoCommerce.StoreModule.Core.Model;
+using VirtoCommerce.OrdersModule.Core.Notifications;
+using VirtoCommerce.CustomerModule.Core.Model;
+using VirtoCommerce.CustomerModule.Core.Services;
+using VirtoCommerce.Platform.Core.Security;
+using Microsoft.AspNetCore.Identity;
+using VirtoCommerce.NotificationsModule.Core.Extensions;
+using VirtoCommerce.NotificationsModule.Core.Model;
+using vc_module_MelhorEnvio.Core.Notifications;
 
 namespace vc_module_MelhorEnvio.Data.BackgroundJobs
 {
@@ -41,8 +51,13 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
         private readonly ICustomerOrderService _customerOrderService;
         private readonly IStoreService _storeService;
         private readonly ISettingsManager _settingsManager;
+        private readonly ICustomerOrderService _orderService;
+        private readonly INotificationSearchService _notificationSearchService;
+        private readonly INotificationSender _notificationSender;
+        private readonly IMemberService _memberService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public TrackingJob(ISettingsManager settingsManager, IStoreService storeService, ICustomerOrderService customerOrderService, ILogger<TrackingJob> log, Func<IOrderRepository> repositoryFactory, IShippingMethodsSearchService shippingMethodsSearchService)
+        public TrackingJob(ISettingsManager settingsManager, IStoreService storeService, ICustomerOrderService customerOrderService, ILogger<TrackingJob> log, Func<IOrderRepository> repositoryFactory, IShippingMethodsSearchService shippingMethodsSearchService, ICustomerOrderService orderService, INotificationSearchService notificationSearchService, INotificationSender notificationSender, IMemberService memberService, UserManager<ApplicationUser> userManager)
         {
             _settingsManager = settingsManager;
             _storeService = storeService;
@@ -50,6 +65,11 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
             _log = log;
             _repositoryFactory = repositoryFactory;
             _shippingMethodsSearchService = shippingMethodsSearchService;
+            _orderService = orderService;
+            _notificationSearchService = notificationSearchService;
+            _notificationSender = notificationSender;
+            _memberService = memberService;
+            _userManager = userManager;
         }
 
         [DisableConcurrentExecution(10)]
@@ -83,6 +103,7 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
                         CustomerOrderId = p.Shipment.CustomerOrderId,
                         ShipmentId = p.ShipmentId,
                         PackageId = p.Id,
+                        CustomerId = p.Shipment.CustomerOrder.CustomerId,
                         OuterId = p.OuterId
                     }).ToArrayAsync();
 
@@ -95,7 +116,7 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
                         var CustomerOrdes = await _customerOrderService.GetByIdsAsync(arryCustomerOrdes);
                         var shippingMethod = CustomerOrdes.FirstOrDefault().Shipments.FirstOrDefault(s => s.ShipmentMethodCode == nameof(MelhorEnvioMethod)).ShippingMethod as MelhorEnvioMethod;
 
-                        var ME_Orders = queryPackages.Select(p => p.OuterId).Where( i => !string.IsNullOrEmpty(i)).ToList();
+                        var ME_Orders = queryPackages.Select(p => p.OuterId).Where(i => !string.IsNullOrEmpty(i)).ToList();
 
                         var resultTracking = shippingMethod.TrackingOrders(store, ME_Orders);
 
@@ -140,6 +161,13 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
                                 if (Shipment.Packages.All(s => (s as ShipmentPackage2).PackageState == K_DeliveryPackageState))
                                 {
                                     CustomerOrde.Status = K_CompletedOrderStatus;
+                                    await TryToSendOrderNotificationsAsync(new OrderNotificationJobArgument[] { new OrderNotificationJobArgument
+                                    {
+                                        CustomerOrderId = queryPackage.CustomerOrderId,
+                                        NotificationTypeName = nameof(OrderDeliveryEmailNotification),
+                                        StoreId = activePaymentMethod.StoreId,
+                                        CustomerId = queryPackage.CustomerId,
+                                    } });
                                 }
                                 if (!customerOrderToUpdate.Contains(CustomerOrde)) customerOrderToUpdate.Add(CustomerOrde);
                             }
@@ -189,5 +217,112 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
                 }
             }
         }
+
+        public virtual async Task TryToSendOrderNotificationsAsync(OrderNotificationJobArgument[] jobArguments)
+        {
+            var ordersByIdDict = (await _orderService.GetByIdsAsync(jobArguments.Select(x => x.CustomerOrderId).Distinct().ToArray()))
+                                .ToDictionary(x => x.Id)
+                                .WithDefaultValue(null);
+
+            foreach (var jobArgument in jobArguments)
+            {
+                var notification = await _notificationSearchService.GetNotificationAsync(jobArgument.NotificationTypeName, new TenantIdentity(jobArgument.StoreId, nameof(Store)));
+                if (notification != null)
+                {
+                    var order = ordersByIdDict[jobArgument.CustomerOrderId];
+
+                    if (order != null && notification is OrderEmailNotificationBase orderNotification)
+                    {
+                        var customer = await GetCustomerAsync(jobArgument.CustomerId);
+
+                        orderNotification.CustomerOrder = order;
+                        orderNotification.Customer = customer;
+                        orderNotification.LanguageCode = order.LanguageCode;
+
+                        await SetNotificationParametersAsync(notification, order);
+                        await _notificationSender.ScheduleSendNotificationAsync(notification);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Set base notification parameters (sender, recipient, isActive)
+        /// </summary>
+        /// <param name="notification"></param>
+        /// <param name="order"></param>
+        protected virtual async Task SetNotificationParametersAsync(Notification notification, CustomerOrder order)
+        {
+            var store = await _storeService.GetByIdAsync(order.StoreId, StoreResponseGroup.StoreInfo.ToString());
+
+            if (notification is EmailNotification emailNotification)
+            {
+                emailNotification.From = store.EmailWithName;
+                emailNotification.To = await GetOrderRecipientEmailAsync(order);
+            }
+
+            // Allow to filter notification log either by customer order or by subscription
+            if (string.IsNullOrEmpty(order.SubscriptionId))
+            {
+                notification.TenantIdentity = new TenantIdentity(order.Id, nameof(CustomerOrder));
+            }
+            else
+            {
+                notification.TenantIdentity = new TenantIdentity(order.SubscriptionId, "Subscription");
+            }
+        }
+
+        protected virtual async Task<string> GetOrderRecipientEmailAsync(CustomerOrder order)
+        {
+            var email = GetOrderAddressEmail(order) ?? await GetCustomerEmailAsync(order.CustomerId);
+            return email;
+        }
+
+        protected virtual string GetOrderAddressEmail(CustomerOrder order)
+        {
+            var email = order.Addresses?.Select(x => x.Email).FirstOrDefault(x => !string.IsNullOrEmpty(x));
+            return email;
+        }
+
+        protected virtual async Task<string> GetCustomerEmailAsync(string customerId)
+        {
+            var customer = await GetCustomerAsync(customerId);
+
+            if (customer == null)
+            {
+                // try to find user
+                var user = await _userManager.FindByIdAsync(customerId);
+
+                return user?.Email;
+            }
+
+            return customer?.Emails?.FirstOrDefault();
+        }
+
+        protected virtual async Task<Member> GetCustomerAsync(string customerId)
+        {
+            // Try to find contact
+            var result = await _memberService.GetByIdAsync(customerId);
+
+            if (result == null)
+            {
+                var user = await _userManager.FindByIdAsync(customerId);
+
+                if (user != null)
+                {
+                    result = await _memberService.GetByIdAsync(user.MemberId);
+                }
+            }
+
+            return result;
+        }
+    }
+
+    public class OrderNotificationJobArgument
+    {
+        public string NotificationTypeName { get; set; }
+        public string CustomerId { get; set; }
+        public string CustomerOrderId { get; set; }
+        public string StoreId { get; set; }
     }
 }

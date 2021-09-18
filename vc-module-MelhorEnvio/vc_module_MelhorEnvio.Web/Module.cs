@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using vc_module_MelhorEnvio.Core;
+using vc_module_MelhorEnvio.Core.Notifications;
 using vc_module_MelhorEnvio.Data.BackgroundJobs;
 using vc_module_MelhorEnvio.Data.Handlers;
 using vc_module_MelhorEnvio.Data.Model;
@@ -13,6 +14,7 @@ using vc_module_MelhorEnvio.Data.Repositories;
 using vc_module_MelhorEnvio.Web.Validation;
 using VirtoCommerce.CustomerModule.Core.Services;
 using VirtoCommerce.InventoryModule.Core.Services;
+using VirtoCommerce.NotificationsModule.Core.Services;
 using VirtoCommerce.OrdersModule.Core.Events;
 using VirtoCommerce.OrdersModule.Core.Model;
 using VirtoCommerce.OrdersModule.Data.Model;
@@ -70,6 +72,9 @@ namespace vc_module_MelhorEnvio.Web
                     .SetCronSetting(ModuleConstants.Settings.MelhorEnvio.CronSyncJob)
                     .ToJob<TrackingJob>(x => x.Process())
                     .Build());
+
+            var notificationRegistrar = appBuilder.ApplicationServices.GetService<INotificationRegistrar>();
+            notificationRegistrar.RegisterNotification<OrderDeliveryEmailNotification>();
 
             // register ShippingMethod
             var shippingMethodsRegistrar = appBuilder.ApplicationServices.GetRequiredService<IShippingMethodsRegistrar>();

@@ -14,6 +14,12 @@
       }
     }
   },
+  "notificationTypes": {
+    "OrderDeliveryEmailNotification": {
+      "displayName": "Order delivered notification",
+      "description": "This notification sends by email to client when all shipments has been delivered"
+    }
+  },
   "settings": {
     "vcmoduleMelhorEnvio": {
       "sandbox": {

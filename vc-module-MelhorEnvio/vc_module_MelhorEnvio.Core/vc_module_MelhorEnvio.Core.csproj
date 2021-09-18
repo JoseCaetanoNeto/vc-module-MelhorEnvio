@@ -27,6 +27,5 @@
 
     <ItemGroup>
         <Folder Include="Events\" />
-        <Folder Include="Notifications\" />
     </ItemGroup>
 </Project>
