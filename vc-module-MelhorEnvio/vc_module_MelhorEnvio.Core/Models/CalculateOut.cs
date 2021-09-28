@@ -105,6 +105,9 @@ namespace vc_module_MelhorEnvio.Core.Models
             [JsonProperty("name")]
             public string Name { get; set; }
 
+            [JsonProperty("error")]
+            public string Error { get; set; }
+
             [JsonProperty("price")]
             public decimal Price { get; set; }
 
