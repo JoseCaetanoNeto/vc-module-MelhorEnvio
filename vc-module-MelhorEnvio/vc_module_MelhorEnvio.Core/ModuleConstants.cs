@@ -31,7 +31,7 @@ namespace vc_module_MelhorEnvio.Core
                 public static readonly SettingDescriptor Sandbox = new SettingDescriptor
                 {
                     Name = "vcmoduleMelhorEnvio.sandbox",
-                    GroupName = "vcmoduleMelhorEnvio|General",
+                    GroupName = "vcmoduleMelhorEnvio|MelhorEnvio by store",
                     ValueType = SettingValueType.Boolean,
                     DefaultValue = "True"
                 };
@@ -39,7 +39,7 @@ namespace vc_module_MelhorEnvio.Core
                 public static readonly SettingDescriptor client_id = new SettingDescriptor
                 {
                     Name = "vcmoduleMelhorEnvio.client_id",
-                    GroupName = "vcmoduleMelhorEnvio|General",
+                    GroupName = "vcmoduleMelhorEnvio|MelhorEnvio by store",
                     ValueType = SettingValueType.SecureString,
                     DefaultValue = "client_id gerado no painel MelhorEnvio"
                 };
@@ -47,7 +47,7 @@ namespace vc_module_MelhorEnvio.Core
                 public static readonly SettingDescriptor client_secret = new SettingDescriptor
                 {
                     Name = "vcmoduleMelhorEnvio.client_secret",
-                    GroupName = "vcmoduleMelhorEnvio|General",
+                    GroupName = "vcmoduleMelhorEnvio|MelhorEnvio by store",
                     ValueType = SettingValueType.SecureString,
                     DefaultValue = ""
                 };
@@ -55,7 +55,7 @@ namespace vc_module_MelhorEnvio.Core
                 public static readonly SettingDescriptor SendDataOnShippingStatus = new SettingDescriptor
                 {
                     Name = "vcmoduleMelhorEnvio.sendDataOnShippingStatus",
-                    GroupName = "vcmoduleMelhorEnvio|General",
+                    GroupName = "vcmoduleMelhorEnvio|MelhorEnvio by store",
                     ValueType = SettingValueType.ShortText,
                     DefaultValue = ""
                 };
@@ -63,7 +63,7 @@ namespace vc_module_MelhorEnvio.Core
                 public static readonly SettingDescriptor Document = new SettingDescriptor
                 {
                     Name = "vcmoduleMelhorEnvio.document",
-                    GroupName = "vcmoduleMelhorEnvio|General",
+                    GroupName = "vcmoduleMelhorEnvio|MelhorEnvio by store",
                     ValueType = SettingValueType.SecureString,
                     DefaultValue = ""
                 };
@@ -71,7 +71,7 @@ namespace vc_module_MelhorEnvio.Core
                 public static readonly SettingDescriptor StateRegister = new SettingDescriptor
                 {
                     Name = "vcmoduleMelhorEnvio.stateRegister",
-                    GroupName = "vcmoduleMelhorEnvio|General",
+                    GroupName = "vcmoduleMelhorEnvio|MelhorEnvio by store",
                     ValueType = SettingValueType.ShortText,
                     DefaultValue = ""
                 };
@@ -79,7 +79,7 @@ namespace vc_module_MelhorEnvio.Core
                 public static readonly SettingDescriptor CompanyDocument = new SettingDescriptor
                 {
                     Name = "vcmoduleMelhorEnvio.companyDocument",
-                    GroupName = "vcmoduleMelhorEnvio|General",
+                    GroupName = "vcmoduleMelhorEnvio|MelhorEnvio by store",
                     ValueType = SettingValueType.ShortText,
                     DefaultValue = ""
                 };
@@ -87,23 +87,23 @@ namespace vc_module_MelhorEnvio.Core
                 public static readonly SettingDescriptor EconomicActivityCode = new SettingDescriptor
                 {
                     Name = "vcmoduleMelhorEnvio.economicActivityCode",
-                    GroupName = "vcmoduleMelhorEnvio|General",
+                    GroupName = "vcmoduleMelhorEnvio|MelhorEnvio by store",
                     ValueType = SettingValueType.ShortText,
                     DefaultValue = ""
-                };                
+                };
 
                 public static readonly SettingDescriptor NonCommercial = new SettingDescriptor
                 {
                     Name = "vcmoduleMelhorEnvio.nonCommercial",
-                    GroupName = "vcmoduleMelhorEnvio|General",
+                    GroupName = "vcmoduleMelhorEnvio|MelhorEnvio by store",
                     ValueType = SettingValueType.Boolean,
                     DefaultValue = false
                 };
-                
+
                 public static readonly SettingDescriptor Token = new SettingDescriptor
                 {
                     Name = "vcmoduleMelhorEnvio.token",
-                    GroupName = "vcmoduleMelhorEnvio|General",
+                    GroupName = "vcmoduleMelhorEnvio|MelhorEnvio by store",
                     ValueType = SettingValueType.LongText,
                     DefaultValue = ""
                 };
@@ -138,7 +138,17 @@ namespace vc_module_MelhorEnvio.Core
                             NonCommercial,
                             Document,
                             SendDataOnShippingStatus,
-                            Sandbox,
+                            Sandbox
+                        };
+                    }
+                }
+
+                public static IEnumerable<SettingDescriptor> GlobalSettings
+                {
+                    get
+                    {
+                        return new List<SettingDescriptor>
+                        {
                             EnableSyncJob,
                             CronSyncJob
                         };
@@ -160,7 +170,8 @@ namespace vc_module_MelhorEnvio.Core
                 get
                 {
                     var list = new List<SettingDescriptor>(MelhorEnvio.Settings);
-                    list.Add(MelhorEnvio.Token);
+                    list.AddRange(MelhorEnvio.GlobalSettings);
+                    list.AddRange(MelhorEnvio.RestrictSettings);
                     return list;
                 }
             }
