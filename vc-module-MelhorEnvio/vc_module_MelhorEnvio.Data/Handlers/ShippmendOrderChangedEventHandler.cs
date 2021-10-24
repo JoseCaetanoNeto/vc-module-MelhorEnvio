@@ -85,18 +85,18 @@ namespace vc_module_MelhorEnvio.Data.Handlers
             shippingMethodsSearchCriteria.StoreId = changedEntry.NewEntry.StoreId;
             shippingMethodsSearchCriteria.Codes = new[] { nameof(MelhorEnvioMethod) };
             shippingMethodsSearchCriteria.IsActive = true;
-            var authorizePaymentMethods = _shippingMethodsSearchService.SearchShippingMethodsAsync(shippingMethodsSearchCriteria).GetAwaiter().GetResult();
-            var paymentMethod = authorizePaymentMethods.Results.FirstOrDefault(s => s.TypeName == nameof(MelhorEnvioMethod));
-            string ShipmentMethod_Id = paymentMethod?.Id;
-
-            if (IsOrderPaid(changedEntry))
-            {
-                result.Add(new ActionJobArgument() { changedEntry = changedEntry, TypeName = "OrderPaid", CustomerOrderId = changedEntry.NewEntry.Id });
-            }
+            var ShipmentMethods = _shippingMethodsSearchService.SearchShippingMethodsAsync(shippingMethodsSearchCriteria).GetAwaiter().GetResult();
+            var ShipmentMethod = ShipmentMethods.Results.FirstOrDefault(s => s.TypeName == nameof(MelhorEnvioMethod));
+            string ShipmentMethod_Id = ShipmentMethod?.Id;
 
             if (IsShippingRecalc(changedEntry))
             {
                 result.Add(new ActionJobArgument() { RunAction = UpdatePackages, changedEntry = changedEntry, TypeName = "OrderChanged", CustomerOrderId = changedEntry.NewEntry.Id });
+            }
+            
+            if (IsOrderPaid(changedEntry))
+            {
+                result.Add(new ActionJobArgument() { changedEntry = changedEntry, TypeName = "OrderPaid", CustomerOrderId = changedEntry.NewEntry.Id });
             }
 
             if (IsSendDataShippingStatus(changedEntry, ShipmentMethod_Id))
@@ -229,7 +229,7 @@ namespace vc_module_MelhorEnvio.Data.Handlers
 
                 foreach (var Package in shipmentSelect.Packages)
                 {
-                    var shipPack = new ShipmentPackage()
+                    var shipPack = new ShipmentPackage2()
                     {
                         Height = Package.Dimensions.Height,
                         Length = Package.Dimensions.Length,
@@ -238,6 +238,8 @@ namespace vc_module_MelhorEnvio.Data.Handlers
                         Weight = Package.Weight,
                         WeightUnit = "kg",
                         PackageType = Package.Format,
+                        MinDays = shipmentSelect.customDeliveryRange.Min,
+                        MaxDays = shipmentSelect.customDeliveryRange.Max,
                         Items = new List<ShipmentItem>()
                     };
 

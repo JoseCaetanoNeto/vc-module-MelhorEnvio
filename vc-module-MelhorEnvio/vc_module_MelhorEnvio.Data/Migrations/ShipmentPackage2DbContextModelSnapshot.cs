@@ -1150,6 +1150,12 @@ namespace vc_module_MelhorEnvio.Data.Migrations
                         .HasColumnType("nvarchar(128)")
                         .HasMaxLength(128);
 
+                    b.Property<int>("MinDays")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxDays")
+                        .HasColumnType("int");
+
                     b.Property<string>("TrackingCode")
                         .HasColumnType("nvarchar(128)")
                         .HasMaxLength(128);

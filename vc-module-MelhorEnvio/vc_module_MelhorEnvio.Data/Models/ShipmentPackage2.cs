@@ -16,6 +16,13 @@ namespace vc_module_MelhorEnvio.Data.Model
         public string PackageState { get; set; }
 
         [Auditable]
+        public int? MinDays { get; set; }
+
+        [Auditable]
+        public int? MaxDays { get; set; }
+
+
+        [Auditable]
         public string TrackingCode { get; set; }
 
         [Auditable]

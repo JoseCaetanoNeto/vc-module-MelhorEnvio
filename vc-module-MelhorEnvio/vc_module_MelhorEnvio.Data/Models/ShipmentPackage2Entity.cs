@@ -23,7 +23,10 @@ namespace vc_module_MelhorEnvio.Data.Model
         
         [StringLength(128)]
         public string Protocol { get; set; }
+
+        public int? MaxDays { get; set; }
         
+        public int? MinDays { get; set; }
 
         public override ShipmentPackage ToModel(ShipmentPackage operation)
         {
@@ -33,6 +36,8 @@ namespace vc_module_MelhorEnvio.Data.Model
                 order2.TrackingCode = TrackingCode;
                 order2.PackageState = PackageState;
                 order2.Protocol = Protocol;
+                order2.MaxDays = MaxDays;
+                order2.MinDays = MinDays;
             }
 
             base.ToModel(operation);
@@ -48,6 +53,8 @@ namespace vc_module_MelhorEnvio.Data.Model
                 TrackingCode = order2.TrackingCode;
                 PackageState = order2.PackageState;
                 Protocol = order2.Protocol;
+                MaxDays = order2.MaxDays;
+                MinDays = order2.MinDays;
             }
 
             base.FromModel(operation, pkMap);
@@ -63,6 +70,8 @@ namespace vc_module_MelhorEnvio.Data.Model
                 target.TrackingCode = TrackingCode;
                 target.PackageState = PackageState;
                 target.Protocol = Protocol;
+                target.MaxDays = MaxDays;
+                target.MinDays = MinDays;
             }
 
             base.Patch(operation);

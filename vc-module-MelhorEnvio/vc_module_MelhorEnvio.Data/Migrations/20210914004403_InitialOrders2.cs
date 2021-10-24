@@ -11,6 +11,8 @@ namespace vc_module_MelhorEnvio.Data.Migrations
             migrationBuilder.AddColumn<string>(name: "TrackingCode", table: "OrderShipmentPackage", maxLength: 128, nullable: true);
             migrationBuilder.AddColumn<string>(name: "OuterId", table: "OrderShipmentPackage", maxLength: 128, nullable: true);
             migrationBuilder.AddColumn<string>(name: "Protocol", table: "OrderShipmentPackage", maxLength: 128, nullable: true);
+            migrationBuilder.AddColumn<int>(name: "MinDays", table: "OrderShipmentPackage", nullable: true);
+            migrationBuilder.AddColumn<int>(name: "MaxDays", table: "OrderShipmentPackage", nullable: true);
             migrationBuilder.AddColumn<string>(name: "Discriminator", table: "OrderShipmentPackage", nullable: false, maxLength: 128, defaultValue: "ShipmentPackage2Entity");
         }
 
@@ -21,6 +23,8 @@ namespace vc_module_MelhorEnvio.Data.Migrations
             migrationBuilder.DropColumn("OuterId", "OrderShipmentPackage");
             migrationBuilder.DropColumn("Protocol", "OrderShipmentPackage");
             migrationBuilder.DropColumn("Discriminator", "OrderShipmentPackage");
+            migrationBuilder.DropColumn("MinDays", "OrderShipmentPackage");
+            migrationBuilder.DropColumn("MaxDays", "OrderShipmentPackage");
         }
     }
 }
