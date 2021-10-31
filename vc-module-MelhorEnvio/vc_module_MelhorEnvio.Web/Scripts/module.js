@@ -17,7 +17,7 @@ angular.module(moduleName, [])
                             var newBlade = {
                                 id: 'blade1',
                                 controller: 'vcmoduleMelhorEnvio.helloWorldController',
-                                template: 'Modules/$(vcmoduleMelhorEnvio)/Scripts/blades/hello-world.html',
+                                template: 'Modules/$(vc_module_MelhorEnvio)/Scripts/blades/hello-world.html',
                                 isClosingDisabled: true
                             };
                             bladeNavigationService.showBlade(newBlade);
