@@ -6,6 +6,11 @@
       }
     }
   },
+  "melhorenviomethod": {
+    "commands": {
+      "register": "Authenticate in MelhorEnvio"
+    }
+  },
   "shipping": {
     "labels": {
       "MelhorEnvioMethod": {

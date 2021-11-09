@@ -25,6 +25,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Scripts\blades\" />
+      <Folder Include="Scripts\resources\" />
       <Folder Include="Services\" />
     </ItemGroup>
 

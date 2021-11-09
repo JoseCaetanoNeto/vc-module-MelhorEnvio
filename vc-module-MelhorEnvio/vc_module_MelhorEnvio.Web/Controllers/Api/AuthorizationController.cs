@@ -71,7 +71,7 @@ namespace vc_module_MelhorEnvio.Web.Controllers.Api
                 string store = splitArray[1];
                 string objectType = nameof(MelhorEnvioMethod);
 
-                var _ShippingMethods = _ShippingMethodsSearchService.SearchShippingMethodsAsync(new ShippingMethodsSearchCriteria() { StoreId = store, Codes = new[] { objectType } }).GetAwaiter().GetResult().Results.FirstOrDefault();
+                var _ShippingMethods = _ShippingMethodsSearchService.SearchShippingMethodsAsync(new ShippingMethodsSearchCriteria() { StoreId = store, Codes = new[] { objectType }, IsActive = true , Keyword = objectType }).GetAwaiter().GetResult().Results.FirstOrDefault();
                 if (_ShippingMethods == null || string.IsNullOrEmpty(_ShippingMethods.Id))
                     return BadRequest();
 
