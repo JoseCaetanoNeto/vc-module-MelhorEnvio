@@ -424,11 +424,11 @@ namespace vc_module_MelhorEnvio.Core
             if (!weight.HasValue)
                 return 0;
             if (weightUnit.Equals("gram", StringComparison.InvariantCultureIgnoreCase))
-                Convert.ToDouble(weight.Value / 1000);
+                return Convert.ToDouble(weight.Value / 1000);
             else if (weightUnit.Equals("kg", StringComparison.InvariantCultureIgnoreCase))
-                Convert.ToDouble(weight.Value);
+                return Convert.ToDouble(weight.Value);
             else if (weightUnit.Equals("g", StringComparison.InvariantCultureIgnoreCase))
-                Convert.ToDouble(weight.Value / 1000);
+                return Convert.ToDouble(weight.Value / 1000);
             return Convert.ToDouble(weight.Value);
         }
 
@@ -437,11 +437,11 @@ namespace vc_module_MelhorEnvio.Core
             if (!height.HasValue)
                 return 0;
             if (measureUnit.Equals("mm", StringComparison.InvariantCultureIgnoreCase))
-                Convert.ToInt32(height.Value / 1000);
+                return Convert.ToInt32(height.Value / 1000);
             else if (measureUnit.Equals("cm", StringComparison.InvariantCultureIgnoreCase))
-                Convert.ToInt32(height.Value);
+                return Convert.ToInt32(height.Value);
             else if (measureUnit.Equals("m", StringComparison.InvariantCultureIgnoreCase))
-                Convert.ToInt32(height.Value * 100);
+                return Convert.ToInt32(height.Value * 100);
             return Convert.ToInt32(height.Value);
         }
 
