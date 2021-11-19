@@ -390,7 +390,7 @@ namespace vc_module_MelhorEnvio.Core
                         Width = ConvertToCm(item.Width, item.MeasureUnit),
                         Length = ConvertToCm(item.Length, item.MeasureUnit),
                         Quantity = item.Quantity,
-                        InsuranceValue = Convert.ToDouble(item.SalePrice),
+                        InsuranceValue = Convert.ToDouble(item.ListPrice - item.DiscountAmount),
                     });
                 }
             }
