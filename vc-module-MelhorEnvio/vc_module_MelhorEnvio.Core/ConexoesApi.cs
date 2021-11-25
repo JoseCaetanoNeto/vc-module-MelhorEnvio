@@ -23,7 +23,7 @@ namespace vc_module_MelhorEnvio.Core
         /// <returns>Efetua chamada POST/GET para uma determinada API</returns>
         /// </summary>
         /// <param name="pUrl"></param><param name="pAuthorization"></param><param name="pMethod">POST/GET</param><param name="pObjetoEntrada"></param>
-        public static T EfetuarChamadaApi<T2, T>(string pUrl, string pAuthorization, string pMethod, string pAgent = null, object pObjetoEntrada = null) where T2 : Models.ErrorOut, new() where T : Models.IErrorOut, new()
+        public static T EfetuarChamadaApi<T2, T>(string pUrl, string pAuthorization, string pMethod, string pAgent = null, object pObjetoEntrada = null, Func<string,string> pPreprocResult = null) where T2 : Models.ErrorOut, new() where T : Models.IErrorOut, new()
         {
             string objEntradaSerializado = string.Empty;
             if (pObjetoEntrada != null)
@@ -55,6 +55,9 @@ namespace vc_module_MelhorEnvio.Core
                         objRetornoSerializado = client.DownloadString(pUrl);
                     else
                         objRetornoSerializado = client.UploadString(pUrl, pMethod, objEntradaSerializado);
+
+                    if (pPreprocResult != null)
+                        objRetornoSerializado = pPreprocResult(objRetornoSerializado);
 
                     objRetorno = JsonConvert.DeserializeObject<T>(objRetornoSerializado);
                 }

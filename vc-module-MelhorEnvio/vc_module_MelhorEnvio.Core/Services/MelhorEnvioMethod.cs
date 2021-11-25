@@ -148,15 +148,17 @@ namespace vc_module_MelhorEnvio.Core
             foreach (var fulfillmentCenter in fulfillmentCenters)
             {
                 var ret = Calculate(store, shippingContext.ShoppingCart.Shipments.FirstOrDefault().DeliveryAddress.PostalCode, shippingContext.ShoppingCart.Items, fulfillmentCenter);
-                foreach (var item in ret)
+                if (ret != null)
                 {
-                    if (string.IsNullOrEmpty(item.Error))
+                    foreach (var item in ret)
                     {
-                        var resultComp = new { NameService = item.Name, Company = item.company.Name, Picture = item.company.Picture, Id = item.Id, CustomDeliveryTime = item.CustomDeliveryTime, CustomDeliveryTimeMin = item.customDeliveryRange.Min, CustomDeliveryTimeMax = item.customDeliveryRange.Max };
-                        retList.Add(new ShippingRate { Rate = item.CustomPrice, Currency = shippingContext.Currency, ShippingMethod = this, OptionName = BuildOptionName(item), OptionDescription = JsonConvert.SerializeObject(resultComp) });
+                        if (string.IsNullOrEmpty(item.Error))
+                        {
+                            var resultComp = new { NameService = item.Name, Company = item.company.Name, Picture = item.company.Picture, Id = item.Id, CustomDeliveryTime = item.CustomDeliveryTime, CustomDeliveryTimeMin = item.customDeliveryRange.Min, CustomDeliveryTimeMax = item.customDeliveryRange.Max };
+                            retList.Add(new ShippingRate { Rate = item.CustomPrice, Currency = shippingContext.Currency, ShippingMethod = this, OptionName = BuildOptionName(item), OptionDescription = JsonConvert.SerializeObject(resultComp) });
+                        }
                     }
                 }
-
             }
             return retList;
         }

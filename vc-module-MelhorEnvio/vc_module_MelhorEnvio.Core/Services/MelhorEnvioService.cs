@@ -42,10 +42,19 @@ namespace vc_module_MelhorEnvio.Core
             if (string.IsNullOrEmpty(m_Access))
                 return default(Models.CalculateOut);
 
-            var result = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.CalculateOut>(BuildUrl(C_Calculate), GetAut(), "POST", buildAgent(), pCalc);
+            var result = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.CalculateOut>(BuildUrl(C_Calculate), GetAut(), "POST", buildAgent(), pCalc, normalizeCalcRetData);
             if (isInvalidToken(result.errorOut))
-                result = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.CalculateOut>(BuildUrl(C_Calculate), GetAut(), "POST", buildAgent(), pCalc);
+                result = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.CalculateOut>(BuildUrl(C_Calculate), GetAut(), "POST", buildAgent(), pCalc, normalizeCalcRetData);
             return result;
+        }
+
+        private string normalizeCalcRetData(string pJson)
+        {
+            if (pJson.Length > 0 && pJson[0] != '[')
+            {
+                return "[" + pJson + "]";
+            }
+            return pJson;
         }
 
         public Models.CartOut InserirCart(Models.CartIn pCart)
