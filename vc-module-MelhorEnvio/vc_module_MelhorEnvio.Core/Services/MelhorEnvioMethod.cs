@@ -109,20 +109,18 @@ namespace vc_module_MelhorEnvio.Core
             }
         }
 
-        public MelhorEnvioMethod(ISettingsManager settingsManager, IStoreService storeService, IFulfillmentCenterService fulfillmentCenterService, IMemberService memberService, UserManager<VirtoCommerce.Platform.Core.Security.ApplicationUser> userManager) : base(nameof(MelhorEnvioMethod))
+        public MelhorEnvioMethod(ISettingsManager pSettingsManager, IStoreService pStoreService, IFulfillmentCenterService pFulfillmentCenterService, IMemberResolver pMemberResolver) : base(nameof(MelhorEnvioMethod))
         {
-            _settingsManager = settingsManager;
-            _storeService = storeService;
-            _fulfillmentCenterService = fulfillmentCenterService;
-            _memberService = memberService;
-            _userManager = userManager;
+            _settingsManager = pSettingsManager;
+            _storeService = pStoreService;
+            _fulfillmentCenterService = pFulfillmentCenterService;
+            _memberResolver = pMemberResolver;
         }
 
         private readonly ISettingsManager _settingsManager;
         private readonly IStoreService _storeService;
         private readonly IFulfillmentCenterService _fulfillmentCenterService;
-        private readonly IMemberService _memberService;
-        private readonly UserManager<VirtoCommerce.Platform.Core.Security.ApplicationUser> _userManager;
+        private readonly IMemberResolver _memberResolver;
 
         public override IEnumerable<ShippingRate> CalculateRates(IEvaluationContext context)
         {
@@ -179,7 +177,7 @@ namespace vc_module_MelhorEnvio.Core
             string customerId = pCustomerOrder.CustomerId;
             var invoiceKey = pCustomerOrder.DynamicProperties.FirstOrDefault(p => p.Name == ModuleConstants.K_InvoiceKey)?.Values.FirstOrDefault()?.Value;
             
-            var customer = (Contact)GetCustomerAsync(customerId).GetAwaiter().GetResult();
+            var customer = _memberResolver.ResolveMemberByIdAsync(customerId).GetAwaiter().GetResult() as Contact;
             var Service = DecodeOptionName(pShipment.ShipmentMethodOption);
             var cartIn = new Models.CartIn()
             {
@@ -450,24 +448,6 @@ namespace vc_module_MelhorEnvio.Core
         private void SaveToken(string newAccessToken)
         {
             _settingsManager.SeveObjectSettings(ModuleConstants.Settings.MelhorEnvio.Token.Name, ModuleConstants.objectTypeRestrict, Id, newAccessToken);
-        }
-
-        private async Task<Member> GetCustomerAsync(string customerId)
-        {
-            // Try to find contact
-            var result = await _memberService.GetByIdAsync(customerId);
-
-            if (result == null)
-            {
-                var user = await _userManager.FindByIdAsync(customerId);
-
-                if (user != null)
-                {
-                    result = await _memberService.GetByIdAsync(user.MemberId);
-                }
-            }
-
-            return result;
         }
 
         public static string BuildOptionName(Models.CalculateOut.Item pItem)

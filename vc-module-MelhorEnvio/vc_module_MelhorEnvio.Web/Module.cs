@@ -64,6 +64,7 @@ namespace vc_module_MelhorEnvio.Web
 
             var recurringJobManager = appBuilder.ApplicationServices.GetService<IRecurringJobManager>();
             var settingsManager = appBuilder.ApplicationServices.GetRequiredService<ISettingsManager>();
+            var memberResolver = appBuilder.ApplicationServices.GetRequiredService<IMemberResolver>();
 
             recurringJobManager.WatchJobSetting(
                 settingsManager,
@@ -80,7 +81,7 @@ namespace vc_module_MelhorEnvio.Web
             var shippingMethodsRegistrar = appBuilder.ApplicationServices.GetRequiredService<IShippingMethodsRegistrar>();
 
 
-            shippingMethodsRegistrar.RegisterShippingMethod(() => new MelhorEnvioMethod(appBuilder.ApplicationServices.GetRequiredService<ISettingsManager>(), appBuilder.ApplicationServices.GetRequiredService<IStoreService>(), appBuilder.ApplicationServices.GetRequiredService<IFulfillmentCenterService>(), appBuilder.ApplicationServices.GetRequiredService<IMemberService>(), appBuilder.ApplicationServices.GetRequiredService<UserManager<ApplicationUser>>()));
+            shippingMethodsRegistrar.RegisterShippingMethod(() => new MelhorEnvioMethod(settingsManager, appBuilder.ApplicationServices.GetRequiredService<IStoreService>(), appBuilder.ApplicationServices.GetRequiredService<IFulfillmentCenterService>(), memberResolver));
 
             var inProcessBus = appBuilder.ApplicationServices.GetService<IHandlerRegistrar>();
             inProcessBus.RegisterHandler<OrderChangedEvent>((message, token) => appBuilder.ApplicationServices.GetService<ShippmendOrderChangedEventHandler>().Handle(message));
