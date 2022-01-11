@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using vc_module_MelhorEnvio.Core.Model;
 using VirtoCommerce.CartModule.Core.Model;
 using VirtoCommerce.CoreModule.Core.Common;
 using VirtoCommerce.CustomerModule.Core.Model;
@@ -286,29 +287,33 @@ namespace vc_module_MelhorEnvio.Core
 
             foreach (var Package in pShipment.Packages)
             {
-                cartIn.Volumes.Clear();
-                cartIn.Volumes.Add(new Models.CartIn.Volume()
+                var Package2 = Package as ShipmentPackage2;
+                if (string.IsNullOrEmpty(Package2.TrackingCode)) // caso já tenha o número de tack já foi enviado anteriormente
                 {
-                    Height = Convert.ToInt32(Package.Height),
-                    Length = Convert.ToInt32(Package.Length),
-                    Weight = Convert.ToInt32(Package.Weight),
-                    Width = Convert.ToInt32(Package.Width)
-                });
-
-                foreach (var item in Package.Items)
-                {
-                    var lineItem = pShipment.Items.FirstOrDefault(i => i.LineItemId == item.LineItemId).LineItem;
-                    cartIn.Products.Clear();
-                    cartIn.Products.Add(new Models.CartIn.Product()
+                    cartIn.Volumes.Clear();
+                    cartIn.Volumes.Add(new Models.CartIn.Volume()
                     {
-                        Name = lineItem.Name, // item.LineItem is null, workaround
-                        Quantity = item.Quantity,
-                        UnitaryValue = lineItem.PriceWithTax
+                        Height = Convert.ToInt32(Package.Height),
+                        Length = Convert.ToInt32(Package.Length),
+                        Weight = Convert.ToInt32(Package.Weight),
+                        Width = Convert.ToInt32(Package.Width)
                     });
-                }
 
-                var retMe = mes.InserirCart(cartIn);
-                ret.Add(Package, retMe);
+                    foreach (var item in Package.Items)
+                    {
+                        var lineItem = pShipment.Items.FirstOrDefault(i => i.LineItemId == item.LineItemId).LineItem;
+                        cartIn.Products.Clear();
+                        cartIn.Products.Add(new Models.CartIn.Product()
+                        {
+                            Name = lineItem.Name, // item.LineItem is null, workaround
+                            Quantity = item.Quantity,
+                            UnitaryValue = lineItem.PriceWithTax
+                        });
+                    }
+
+                    var retMe = mes.InserirCart(cartIn);
+                    ret.Add(Package, retMe);
+                }
             }
             return ret;
         }
@@ -325,8 +330,13 @@ namespace vc_module_MelhorEnvio.Core
                     UnitaryValue = lineItem.PriceWithTax //  item.LineItem is null, workaround
                 });
             }
+            bool generateCall = false;
             foreach (var Package in pShipment.Packages)
             {
+                var Package2 = Package as ShipmentPackage2;
+                if (string.IsNullOrEmpty(Package2.TrackingCode)) if (string.IsNullOrEmpty(Package2.TrackingCode)) // caso já tenha o número de tack já foi enviado anteriormente
+                        generateCall = true;
+
                 cartIn.Volumes.Add(new Models.CartIn.Volume()
                 {
                     Height = Convert.ToInt32(Package.Height),
@@ -335,13 +345,16 @@ namespace vc_module_MelhorEnvio.Core
                     Width = Convert.ToInt32(Package.Width)
                 });
             }
-            MelhorEnvioApi mes = new MelhorEnvioApi(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
-            mes.onSaveNewToken = SaveToken;
-            var retMe = mes.InserirCart(cartIn);
             var ret = new Dictionary<OrderModel.ShipmentPackage, Models.CartOut>(pShipment.Packages.Count);
-            foreach (var Package in pShipment.Packages)
+            if (generateCall)
             {
-                ret.Add(Package, retMe);
+                MelhorEnvioApi mes = new MelhorEnvioApi(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
+                mes.onSaveNewToken = SaveToken;
+                var retMe = mes.InserirCart(cartIn);
+                foreach (var Package in pShipment.Packages)
+                {
+                    ret.Add(Package, retMe);
+                }
             }
             return ret;
         }
