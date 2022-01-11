@@ -10,8 +10,8 @@ angular.module(moduleName, [])
         function (widgetService, toolbarService, authService, dialogService, bladeNavigationService) {
 
             var menuItemStore = {
-                name: "melhorenviomethod.commands.register",
-                icon: 'fa fa-external-link',
+                name: "melhorenvio.commands.register",
+                icon: 'fa fa-puzzle-piece',
                 executeMethod: function (blade) {
                     $.getJSON('api/melhorenvio/oauth/authorize/?store=' + blade.storeId, function (url) {
                         window.open(url[0], '_blank');
@@ -24,8 +24,8 @@ angular.module(moduleName, [])
             }
 
             var menuItemInsertCart = {
-                name: "melhorenviomethod.commands.insert_cart",
-                icon: 'fa fa-external-link',
+                name: "melhorenvio.commands.insert_cart",
+                icon: 'fa fa-qrcode',
                 executeMethod: function (blade) {
                     var dialog = {
                         id: "confirmDialog",
@@ -67,8 +67,8 @@ angular.module(moduleName, [])
             };
 
             var menuItemOpenCart = {
-                name: "melhorenviomethod.commands.open_cart",
-                icon: 'fa fa-external-link',
+                name: "melhorenvio.commands.open_cart",
+                icon: 'fa fa-shopping-cart',
                 executeMethod: function (blade) {
                     var sandBox = _.findWhere(blade.currentEntity.shippingMethod.settings, { name: 'vcmoduleMelhorEnvio.sandbox' }).value;
                     window.open(sandBox ? 'https://sandbox.melhorenvio.com.br/carrinho' : 'https://melhorenvio.com.br/carrinho', '_blank');
@@ -90,8 +90,8 @@ angular.module(moduleName, [])
             };           
 
             var menuItemShipmment = {
-                name: "melhorenviomethod.commands.traking",
-                icon: 'fa fa-external-link',
+                name: "melhorenvio.commands.traking",
+                icon: 'fa fa-truck',
                 executeMethod: function (blade) {
 
                     for (var i = 0; i < blade.currentEntity.packages.length; i++) {

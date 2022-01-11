@@ -12,9 +12,7 @@
         "title": "Geração de Etiquetas",
         "message": "Confirma a geração da etiqueta de envio? É necessário que seja confirmado no checkout do Melhorenvio e efetuado o pagamento da mesma."
       }
-    }
-  },
-  "melhorenviomethod": {
+    },
     "commands": {
       "register": "Authenticate in MelhorEnvio",
       "insert_cart": "Insert Cart",
