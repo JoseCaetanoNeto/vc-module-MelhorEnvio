@@ -39,10 +39,11 @@ angular.module(moduleName, [])
                                     blade.isLoading = false;
                                     blade.refresh();
                                     blade.parentBlade.refresh();
+                                    bladeNavigationService.closeBlade(blade);
                                     window.open(sandBox ? 'https://sandbox.melhorenvio.com.br/carrinho' : 'https://melhorenvio.com.br/carrinho', '_blank');
                                 }).fail(function (response) {
-                                    blade.isLoading = false;
                                     bladeNavigationService.setError('Error ' + response.responseJSON.message, blade);
+                                    blade.isLoading = false;
                                 });
                             }
                         }

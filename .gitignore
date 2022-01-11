@@ -364,3 +364,4 @@ FodyWeavers.xsd
 
 # Webpack output
 dist/
+*.nuke
