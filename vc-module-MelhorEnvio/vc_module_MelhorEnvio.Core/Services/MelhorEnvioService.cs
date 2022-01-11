@@ -9,9 +9,9 @@ using VirtoCommerce.StoreModule.Core.Services;
 
 namespace vc_module_MelhorEnvio.Core
 {
-    public class MelhorEnvioService2 : IMelhorEnvioService
+    public class MelhorEnvioService : IMelhorEnvioService
     {
-        public MelhorEnvioService2(ISettingsManager pSettingsManager, IStoreService pStoreService, IFulfillmentCenterService pFulfillmentCenterService, IMemberResolver pMemberResolver)
+        public MelhorEnvioService(ISettingsManager pSettingsManager, IStoreService pStoreService, IFulfillmentCenterService pFulfillmentCenterService, IMemberResolver pMemberResolver)
         {
             _settingsManager = pSettingsManager;
             _storeService = pStoreService;

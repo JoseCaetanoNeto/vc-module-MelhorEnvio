@@ -49,7 +49,7 @@ namespace vc_module_MelhorEnvio.Web
             serviceCollection.AddTransient<ShippmendOrderChangedEventHandler>();
             serviceCollection.AddTransient<ShippmendCancelOrderEventHandler>();
             serviceCollection.AddTransient<IValidator<Shipment>, MelhorEnvioValidator>();
-            serviceCollection.AddTransient<IMelhorEnvioService, MelhorEnvioService2>();
+            serviceCollection.AddTransient<IMelhorEnvioService, MelhorEnvioService>();
 
             // TODO:
             // serviceCollection.AddTransient<Func<IvcmoduleMelhorEnvioRepository>>(provider => () => provider.CreateScope().ServiceProvider.GetRequiredService<IvcmoduleMelhorEnvioRepository>());
