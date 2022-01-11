@@ -9,8 +9,8 @@
   "melhorenvio": {
     "dialogs": {
       "hold-confirmation": {
-        "title": "Gera&#231;&#227;o&#160;de&#160;Etiquetas",
-        "message": "Confirma&#160;a&#160;gera&#231;&#227;o&#160;da&#160;etiqueta&#160;de&#160;envio?&#160;&#201;&#160;necess&#225;rio&#160;que&#160;seja&#160;confirmado&#160;no&#160;checkout&#160;do&#160;Melhorenvio&#160;e&#160;efetuado&#160;o&#160;pagamento&#160;da&#160;mesma."
+        "title": "Geração de Etiquetas",
+        "message": "Confirma a geração da etiqueta de envio? É necessário que seja confirmado no checkout do Melhorenvio e efetuado o pagamento da mesma."
       }
     }
   },
@@ -71,20 +71,20 @@
         "description": "Somente quando envio 'nonCommercial' for 'sim'"
       },
       "stateRegister": {
-        "title": "Inscri��o Estadual",
-        "description": "quando envio 'nonCommercial' for 'n�o'"
+        "title": "Inscrição Estadual",
+        "description": "quando envio 'nonCommercial' for 'não'"
       },
       "companyDocument": {
         "title": "CNPJ",
-        "description": "quando envio 'nonCommercial' for 'n�o'"
+        "description": "quando envio 'nonCommercial' for 'não'"
       },
       "economicActivityCode": {
         "title": "CNAE",
-        "description": "quando envio 'nonCommercial' for 'n�o', obrigat�rio quando fo LATAN-CARGO"
+        "description": "quando envio 'nonCommercial' for 'não', obrigatório quando fo LATAN-CARGO"
       },
       "nonCommercial": {
         "title": "non Commercial send",
-        "description": "Envio n�o comercial, marcar 'Sim'"
+        "description": "Envio não comercial, marcar 'Sim'"
       },
       "token": {
         "title": "",
