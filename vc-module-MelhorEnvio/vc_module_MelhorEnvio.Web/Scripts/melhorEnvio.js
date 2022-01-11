@@ -6,8 +6,8 @@ if (AppDependencies !== undefined) {
 }
 
 angular.module(moduleName, [])   
-    .run(['platformWebApp.widgetService', 'platformWebApp.toolbarService', 'platformWebApp.authService',
-        function (widgetService, toolbarService, authService) {
+    .run(['platformWebApp.widgetService', 'platformWebApp.toolbarService', 'platformWebApp.authService', 'platformWebApp.dialogService','platformWebApp.bladeNavigationService',
+        function (widgetService, toolbarService, authService, dialogService, bladeNavigationService) {
 
             var menuItemStore = {
                 name: "melhorenviomethod.commands.register",
@@ -22,6 +22,71 @@ angular.module(moduleName, [])
                 },
                 index: 99
             }
+
+            var menuItemInsertCart = {
+                name: "melhorenviomethod.commands.insert_cart",
+                icon: 'fa fa-external-link',
+                executeMethod: function (blade) {
+                    var dialog = {
+                        id: "confirmDialog",
+                        title: "melhorenvio.dialogs.hold-confirmation.title",
+                        message:  'melhorenvio.dialogs.hold-confirmation.message',
+                        callback: function (ok) {
+                            if (ok) {
+                                blade.isLoading = true;
+                                var sandBox = _.findWhere(blade.currentEntity.shippingMethod.settings, { name: 'vcmoduleMelhorEnvio.sandbox' }).value;
+                                $.post('api/melhorenvio/cart', { order_id: blade.customerOrder.id }).then(function () {
+                                    blade.isLoading = false;
+                                    blade.refresh();
+                                    blade.parentBlade.refresh();
+                                    window.open(sandBox ? 'https://sandbox.melhorenvio.com.br/carrinho' : 'https://melhorenvio.com.br/carrinho', '_blank');
+                                }).fail(function (response) {
+                                    blade.isLoading = false;
+                                    bladeNavigationService.setError('Error ' + response.responseJSON.message, blade);
+                                });
+                            }
+                        }
+                    };
+                    dialogService.showConfirmationDialog(dialog);
+                },
+                canExecuteMethod: function (blade) {
+                    if (blade.id != "operationDetail" || blade.isLoading || blade.isLocked || blade.currentEntity == undefined || blade.currentEntity.operationType != "Shipment") {
+                        return false;
+                    }
+                    if (blade.currentEntity.shippingMethod.code == "MelhorEnvioMethod") {
+                        for (var i = 0; i < blade.currentEntity.packages.length; i++) {
+                            if (blade.currentEntity.packages[i].outerId == undefined) {
+                                return true;
+                            };
+                        }
+                    }
+                    return false;
+                },
+                index: 97
+            };
+
+            var menuItemOpenCart = {
+                name: "melhorenviomethod.commands.open_cart",
+                icon: 'fa fa-external-link',
+                executeMethod: function (blade) {
+                    var sandBox = _.findWhere(blade.currentEntity.shippingMethod.settings, { name: 'vcmoduleMelhorEnvio.sandbox' }).value;
+                    window.open(sandBox ? 'https://sandbox.melhorenvio.com.br/carrinho' : 'https://melhorenvio.com.br/carrinho', '_blank');
+                },
+                canExecuteMethod: function (blade) {
+                    if (blade.id != "operationDetail" || blade.currentEntity == undefined || blade.currentEntity.operationType != "Shipment") {
+                        return false;
+                    }
+                    if (blade.currentEntity.shippingMethod.code == "MelhorEnvioMethod") {
+                        for (var i = 0; i < blade.currentEntity.packages.length; i++) {
+                            if (blade.currentEntity.packages[i].trackingCode == undefined && blade.currentEntity.packages[i].outerId != undefined) {
+                                return true;
+                            };
+                        }
+                    }
+                    return false;
+                },
+                index: 98
+            };           
 
             var menuItemShipmment = {
                 name: "melhorenviomethod.commands.traking",
@@ -46,28 +111,13 @@ angular.module(moduleName, [])
                     }
                     return false;
                 },
-                index: 98
-            };
-
-            var menuItemOpenCart = {
-                name: "melhorenviomethod.commands.open_cart",
-                icon: 'fa fa-external-link',
-                executeMethod: function (blade) {
-                    var sandBox = _.findWhere(blade.currentEntity.shippingMethod.settings, { name: 'vcmoduleMelhorEnvio.sandbox' }).value;
-                    window.open(sandBox ? 'https://sandbox.melhorenvio.com.br/carrinho' : 'https://melhorenvio.com.br/carrinho', '_blank');
-                },
-                canExecuteMethod: function (blade) {
-                    if (blade.id != "operationDetail" || blade.currentEntity == undefined || blade.currentEntity.operationType != "Shipment") {
-                        return false;
-                    }
-                    return blade.currentEntity.shippingMethod.code == "MelhorEnvioMethod";
-                },
                 index: 99
             };
 
             toolbarService.register(menuItemStore, 'virtoCommerce.shippingModule.shippingMethodDetailController');
             toolbarService.register(menuItemShipmment, 'virtoCommerce.orderModule.operationDetailController');
             toolbarService.register(menuItemOpenCart, 'virtoCommerce.orderModule.operationDetailController');
+            toolbarService.register(menuItemInsertCart, 'virtoCommerce.orderModule.operationDetailController');
 
             //Register dashboard widgets
             //widgetService.registerWidget({

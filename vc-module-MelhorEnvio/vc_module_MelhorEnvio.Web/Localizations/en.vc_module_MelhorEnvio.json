@@ -6,11 +6,20 @@
       }
     }
   },
+  "melhorenvio": {
+    "dialogs": {
+      "hold-confirmation": {
+        "title": "Gera&#231;&#227;o&#160;de&#160;Etiquetas",
+        "message": "Confirma&#160;a&#160;gera&#231;&#227;o&#160;da&#160;etiqueta&#160;de&#160;envio?&#160;&#201;&#160;necess&#225;rio&#160;que&#160;seja&#160;confirmado&#160;no&#160;checkout&#160;do&#160;Melhorenvio&#160;e&#160;efetuado&#160;o&#160;pagamento&#160;da&#160;mesma."
+      }
+    }
+  },
   "melhorenviomethod": {
     "commands": {
       "register": "Authenticate in MelhorEnvio",
-      "traking": "Track Item",
-      "open_cart": "Open Cart"
+      "insert_cart": "Insert Cart",
+      "open_cart": "Open Cart",
+      "traking": "Track Item"
     }
   },
   "shipping": {
