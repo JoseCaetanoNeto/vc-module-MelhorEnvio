@@ -1,19 +1,17 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using VirtoCommerce.CartModule.Core.Model;
 using VirtoCommerce.CoreModule.Core.Common;
+using VirtoCommerce.CustomerModule.Core.Model;
+using VirtoCommerce.CustomerModule.Core.Services;
+using VirtoCommerce.InventoryModule.Core.Model;
+using VirtoCommerce.InventoryModule.Core.Services;
 using VirtoCommerce.Platform.Core.Settings;
 using VirtoCommerce.ShippingModule.Core.Model;
 using VirtoCommerce.StoreModule.Core.Model;
 using VirtoCommerce.StoreModule.Core.Services;
-using VirtoCommerce.InventoryModule.Core.Model;
-using VirtoCommerce.InventoryModule.Core.Services;
-using Newtonsoft.Json;
-using VirtoCommerce.CustomerModule.Core.Model;
-using System.Threading.Tasks;
-using VirtoCommerce.CustomerModule.Core.Services;
-using Microsoft.AspNetCore.Identity;
 using OrderModel = VirtoCommerce.OrdersModule.Core.Model;
 
 namespace vc_module_MelhorEnvio.Core
@@ -243,7 +241,7 @@ namespace vc_module_MelhorEnvio.Core
         public Models.TrackingOut TrackingOrders(Store pStore, List<string> pOrders)
         {
             var orders = new Models.TrackingIn() { Orders = pOrders };
-            MelhorEnvioService mes = new MelhorEnvioService(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
+            MelhorEnvioApi mes = new MelhorEnvioApi(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
             mes.onSaveNewToken = SaveToken;
             var trackings = mes.Tracking(orders);
             return trackings;
@@ -251,14 +249,14 @@ namespace vc_module_MelhorEnvio.Core
 
         public Models.CancelOut CancelOrder(Store pStore, string pOrder, string pDescription)
         {
-            MelhorEnvioService mes = new MelhorEnvioService(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
+            MelhorEnvioApi mes = new MelhorEnvioApi(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
             mes.onSaveNewToken = SaveToken;
             return mes.Cancel(pOrder, pDescription);
         }
 
         public Models.AgencieOut GetAgencyInfo(int pAgencyId, Store pStore)
         {
-            MelhorEnvioService mes = new MelhorEnvioService(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
+            MelhorEnvioApi mes = new MelhorEnvioApi(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
             mes.onSaveNewToken = SaveToken;
             return mes.GetAgencyInfo(pAgencyId);
         }
@@ -282,7 +280,7 @@ namespace vc_module_MelhorEnvio.Core
 
         private Dictionary<OrderModel.ShipmentPackage, Models.CartOut> SendCorreios(OrderModel.Shipment pShipment, Store pStore, Models.CartIn cartIn)
         {
-            MelhorEnvioService mes = new MelhorEnvioService(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
+            MelhorEnvioApi mes = new MelhorEnvioApi(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
             mes.onSaveNewToken = SaveToken;
             var ret = new Dictionary<OrderModel.ShipmentPackage, Models.CartOut>(pShipment.Packages.Count);
 
@@ -337,7 +335,7 @@ namespace vc_module_MelhorEnvio.Core
                     Width = Convert.ToInt32(Package.Width)
                 });
             }
-            MelhorEnvioService mes = new MelhorEnvioService(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
+            MelhorEnvioApi mes = new MelhorEnvioApi(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
             mes.onSaveNewToken = SaveToken;
             var retMe = mes.InserirCart(cartIn);
             var ret = new Dictionary<OrderModel.ShipmentPackage, Models.CartOut>(pShipment.Packages.Count);
@@ -368,7 +366,7 @@ namespace vc_module_MelhorEnvio.Core
 
             if (calc.Products.Count > 0)
             {
-                MelhorEnvioService mes = new MelhorEnvioService(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
+                MelhorEnvioApi mes = new MelhorEnvioApi(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
                 mes.onSaveNewToken = SaveToken;
                 return mes.Calculate(calc);
             }

@@ -1,13 +1,10 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace vc_module_MelhorEnvio.Core
 {
-    public class MelhorEnvioService
+    public class MelhorEnvioApi
     {
         const string C_OauthToken = "{urlbase}/oauth/token";
         const string C_Calculate = "{urlbase}/api/v2/me/shipment/calculate";
@@ -27,7 +24,7 @@ namespace vc_module_MelhorEnvio.Core
         string m_Access;
         public Action<string> onSaveNewToken;
 
-        public MelhorEnvioService(string pClient_id, string pClient_secret, bool pSandBox, string pApplycation_id, string pAdminEmail, string pAccess)
+        public MelhorEnvioApi(string pClient_id, string pClient_secret, bool pSandBox, string pApplycation_id, string pAdminEmail, string pAccess)
         {
             m_client_id = pClient_id;
             m_client_secret = pClient_secret;

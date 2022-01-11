@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using vc_module_MelhorEnvio.Core.Model;
 using VirtoCommerce.OrdersModule.Core.Model;
 using VirtoCommerce.OrdersModule.Data.Model;
 using VirtoCommerce.Platform.Core.Common;

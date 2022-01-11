@@ -4,23 +4,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using vc_module_MelhorEnvio.Core;
-using vc_module_MelhorEnvio.Data.Model;
-using VirtoCommerce.InventoryModule.Core.Services;
+using vc_module_MelhorEnvio.Core.Model;
 using VirtoCommerce.OrdersModule.Core.Events;
 using VirtoCommerce.OrdersModule.Core.Model;
 using VirtoCommerce.OrdersModule.Core.Services;
-using VirtoCommerce.PaymentModule.Core.Model;
 using VirtoCommerce.Platform.Core.Common;
 using VirtoCommerce.Platform.Core.Events;
-using VirtoCommerce.Platform.Core.Settings;
-using VirtoCommerce.ShippingModule.Core.Model.Search;
-using VirtoCommerce.ShippingModule.Core.Services;
 using VirtoCommerce.StoreModule.Core.Model;
 using VirtoCommerce.StoreModule.Core.Services;
 
 namespace vc_module_MelhorEnvio.Data.Handlers
 {
-    
+
 
 
     /// <summary>

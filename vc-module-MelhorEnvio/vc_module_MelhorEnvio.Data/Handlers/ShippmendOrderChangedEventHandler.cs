@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using vc_module_MelhorEnvio.Core;
-using vc_module_MelhorEnvio.Data.Model;
+using vc_module_MelhorEnvio.Core.Model;
 using VirtoCommerce.InventoryModule.Core.Services;
 using VirtoCommerce.OrdersModule.Core.Events;
 using VirtoCommerce.OrdersModule.Core.Model;
@@ -43,6 +43,7 @@ namespace vc_module_MelhorEnvio.Data.Handlers
         private readonly ICustomerOrderService _orderService;
         private readonly IFulfillmentCenterService _fulfillmentCenterService;
         private readonly IShippingMethodsSearchService _shippingMethodsSearchService;
+        private readonly IMelhorEnvioService _melhorEnvioService;
 
         /// <summary>
         /// Constructor.
@@ -51,13 +52,14 @@ namespace vc_module_MelhorEnvio.Data.Handlers
         /// <param name="storeService">Implementation of store service.</param>
         /// <param name="settingsManager">Implementation of settings manager.</param>
         /// <param name="itemService">Implementation of item service</param>
-        public ShippmendOrderChangedEventHandler(IStoreService storeService, ISettingsManager settingsManager, ICustomerOrderService orderService, IFulfillmentCenterService fulfillmentCenterService, IShippingMethodsSearchService shippingMethodsSearchService)
+        public ShippmendOrderChangedEventHandler(IStoreService storeService, ISettingsManager settingsManager, ICustomerOrderService orderService, IFulfillmentCenterService fulfillmentCenterService, IShippingMethodsSearchService shippingMethodsSearchService, IMelhorEnvioService pMelhorEnvioService)
         {
             _settingsManager = settingsManager;
             _storeService = storeService;
             _orderService = orderService;
             _fulfillmentCenterService = fulfillmentCenterService;
             _shippingMethodsSearchService = shippingMethodsSearchService;
+            _melhorEnvioService = pMelhorEnvioService;
         }
 
         public virtual Task Handle(OrderChangedEvent message)
@@ -101,7 +103,7 @@ namespace vc_module_MelhorEnvio.Data.Handlers
 
             if (IsSendDataShippingStatus(changedEntry, ShipmentMethod_Id))
             {
-                result.Add(new ActionJobArgument() { RunAction = SendMECart, changedEntry = changedEntry, TypeName = "SendPackages", CustomerOrderId = changedEntry.NewEntry.Id });
+                result.Add(new ActionJobArgument() { RunAction = _melhorEnvioService.SendMECart, changedEntry = changedEntry, TypeName = "SendPackages", CustomerOrderId = changedEntry.NewEntry.Id });
             }
 
             return result.ToArray();
@@ -254,66 +256,6 @@ namespace vc_module_MelhorEnvio.Data.Handlers
             }
             return true;
         }
-
-        private bool SendMECart(CustomerOrder pCustomerOrder)
-        {
-            var Items = pCustomerOrder.Items;
-            if (Items.Count == 0)
-                return false;
-
-            var store = _storeService.GetByIdAsync(pCustomerOrder.StoreId).GetAwaiter().GetResult();
-            var shipments = pCustomerOrder.Shipments.Where(s => s.ShipmentMethodCode == nameof(MelhorEnvioMethod));
-            foreach (var shipment in shipments)
-            {
-                MelhorEnvioMethod melhorEnvioMethod = shipment.ShippingMethod as MelhorEnvioMethod;
-
-                var FulfillmentCenterIds = melhorEnvioMethod.getFulfillmentCenters(
-                    shipments.Select(s => s.FulfillmentCenterId).Where(s => s != null).Distinct().ToList(),
-                    Items.Select(i => i.FulfillmentLocationCode).Where(s => s != null).Distinct().ToList(),
-                    store.MainFulfillmentCenterId);
-
-                var fulfillmentCenters = _fulfillmentCenterService.GetByIdsAsync(FulfillmentCenterIds).GetAwaiter().GetResult();
-
-                var KeysValues = melhorEnvioMethod.SendMECart(pCustomerOrder, shipment, store, fulfillmentCenters.FirstOrDefault());
-                foreach (var keyValue in KeysValues)
-                {
-                    var package = keyValue.Key as ShipmentPackage2;
-                    var retMEApi = keyValue.Value;
-                    if (retMEApi.errorOut != null)
-                    {
-                        string errors = retMEApi.errorOut.errors?.ToString();
-                        if (errors != null)
-                            throw new Exception($"{retMEApi.errorOut.message} - {errors}");
-                        else
-                            throw new Exception(retMEApi.errorOut.message);
-                    }
-                    package.OuterId = retMEApi.Id;
-                    package.Protocol = retMEApi.Protocol;
-                    shipment.Comment += $"PROTOCOL: {retMEApi.Protocol} {Environment.NewLine}";
-                    if (retMEApi.AgencyId.HasValue)
-                    {
-                        var agency = melhorEnvioMethod.GetAgencyInfo(retMEApi.AgencyId.Value, store);
-                        if (agency.errorOut == null || agency.errorOut.status_code == 0)
-                        {
-                            shipment.Comment += $"AGÊNCIA: {agency.Name} {Environment.NewLine}" +
-                            $"{agency.CompanyName} {Environment.NewLine}" +
-                            Environment.NewLine +
-
-                            $"ENDEREÇO: {agency.address.address} " +
-                            (string.IsNullOrWhiteSpace(agency.address.Number) ? string.Empty : $", Nº { agency.address.Number} ") +
-                            (string.IsNullOrWhiteSpace(agency.address.Complement) ? string.Empty : $", {agency.address.Complement} ") +
-                            (string.IsNullOrWhiteSpace(agency.address.District) ? string.Empty : $", {agency.address.District} ") +
-                            (string.IsNullOrWhiteSpace(agency.address.City.city) ? string.Empty : $", {agency.address.City.city} ") +
-                            (string.IsNullOrWhiteSpace(agency.address.City.State.StateAbbr) ? string.Empty : $" - {agency.address.City.State.StateAbbr} ") +
-
-                            $"{Environment.NewLine}EMAIL: {agency.Email} {Environment.NewLine}" +
-                            $"TELEFONE: {agency.phone.phone} {Environment.NewLine}{Environment.NewLine}";
-                        }
-                    }
-                }
-
-            }
-            return true;
-        }
+        
     }
 }

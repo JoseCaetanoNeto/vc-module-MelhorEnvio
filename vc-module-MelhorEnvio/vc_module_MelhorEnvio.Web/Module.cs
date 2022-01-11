@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using vc_module_MelhorEnvio.Core;
+using vc_module_MelhorEnvio.Core.Model;
 using vc_module_MelhorEnvio.Core.Notifications;
 using vc_module_MelhorEnvio.Data.BackgroundJobs;
 using vc_module_MelhorEnvio.Data.Handlers;
@@ -48,6 +49,7 @@ namespace vc_module_MelhorEnvio.Web
             serviceCollection.AddTransient<ShippmendOrderChangedEventHandler>();
             serviceCollection.AddTransient<ShippmendCancelOrderEventHandler>();
             serviceCollection.AddTransient<IValidator<Shipment>, MelhorEnvioValidator>();
+            serviceCollection.AddTransient<IMelhorEnvioService, MelhorEnvioService2>();
 
             // TODO:
             // serviceCollection.AddTransient<Func<IvcmoduleMelhorEnvioRepository>>(provider => () => provider.CreateScope().ServiceProvider.GetRequiredService<IvcmoduleMelhorEnvioRepository>());

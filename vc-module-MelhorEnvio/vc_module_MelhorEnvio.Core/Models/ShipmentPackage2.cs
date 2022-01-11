@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using VirtoCommerce.OrdersModule.Core.Model;
 
-namespace vc_module_MelhorEnvio.Data.Model
+namespace vc_module_MelhorEnvio.Core.Model
 {
     public class ShipmentPackage2 : ShipmentPackage
     {

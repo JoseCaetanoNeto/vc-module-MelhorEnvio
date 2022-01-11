@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using vc_module_MelhorEnvio.Core;
-using vc_module_MelhorEnvio.Data.Model;
+using vc_module_MelhorEnvio.Core.Model;
 using vc_module_MelhorEnvio.Data.Repositories;
 using VirtoCommerce.OrdersModule.Core.Services;
 using VirtoCommerce.OrdersModule.Data.Repositories;
