@@ -5,15 +5,24 @@ VisualStudioVersion = 16.0.31624.102
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D06611CA-F2A9-4821-BB2F-DB0306EA3FF7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vc_module_MelhorEnvio.Web", "vc-module-MelhorEnvio\vc_module_MelhorEnvio.Web\vc_module_MelhorEnvio.Web.csproj", "{00F388E1-6E6A-4AF0-8A60-BC72CBD2B47B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vc_module_MelhorEnvio.Web", "vc-module-MelhorEnvio\vc_module_MelhorEnvio.Web\vc_module_MelhorEnvio.Web.csproj", "{00F388E1-6E6A-4AF0-8A60-BC72CBD2B47B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vc_module_MelhorEnvio.Core", "vc-module-MelhorEnvio\vc_module_MelhorEnvio.Core\vc_module_MelhorEnvio.Core.csproj", "{4AA3F7BD-361B-481E-BE02-3126D7AE3282}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vc_module_MelhorEnvio.Core", "vc-module-MelhorEnvio\vc_module_MelhorEnvio.Core\vc_module_MelhorEnvio.Core.csproj", "{4AA3F7BD-361B-481E-BE02-3126D7AE3282}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vc_module_MelhorEnvio.Data", "vc-module-MelhorEnvio\vc_module_MelhorEnvio.Data\vc_module_MelhorEnvio.Data.csproj", "{2A796B2C-E5E4-4B62-85CF-3608BCD3A8C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vc_module_MelhorEnvio.Data", "vc-module-MelhorEnvio\vc_module_MelhorEnvio.Data\vc_module_MelhorEnvio.Data.csproj", "{2A796B2C-E5E4-4B62-85CF-3608BCD3A8C3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{EADFB47E-C177-497F-AC26-1C17E7123FDC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vc_module_MelhorEnvio.Tests", "vc-module-MelhorEnvio\vc_module_MelhorEnvio.Tests\vc_module_MelhorEnvio.Tests.csproj", "{77C4B392-7685-44FF-A8E5-F85BA8D7DE5C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vc_module_MelhorEnvio.Tests", "vc-module-MelhorEnvio\vc_module_MelhorEnvio.Tests\vc_module_MelhorEnvio.Tests.csproj", "{77C4B392-7685-44FF-A8E5-F85BA8D7DE5C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Geo.Here", "vc-module-MelhorEnvio\Geo.Here\Geo.Here.csproj", "{FD71EF1C-7B8E-4214-A6E7-CB3B42604B19}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Geo.Core", "vc-module-MelhorEnvio\Geo.Core\Geo.Core.csproj", "{6315B5FF-BA82-4326-ABED-55D9A018B319}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AD18FA0A-653A-40B2-988C-D54C31E42AEA}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,6 +46,14 @@ Global
 		{77C4B392-7685-44FF-A8E5-F85BA8D7DE5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{77C4B392-7685-44FF-A8E5-F85BA8D7DE5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{77C4B392-7685-44FF-A8E5-F85BA8D7DE5C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD71EF1C-7B8E-4214-A6E7-CB3B42604B19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD71EF1C-7B8E-4214-A6E7-CB3B42604B19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD71EF1C-7B8E-4214-A6E7-CB3B42604B19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD71EF1C-7B8E-4214-A6E7-CB3B42604B19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6315B5FF-BA82-4326-ABED-55D9A018B319}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6315B5FF-BA82-4326-ABED-55D9A018B319}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6315B5FF-BA82-4326-ABED-55D9A018B319}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6315B5FF-BA82-4326-ABED-55D9A018B319}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -46,6 +63,8 @@ Global
 		{4AA3F7BD-361B-481E-BE02-3126D7AE3282} = {D06611CA-F2A9-4821-BB2F-DB0306EA3FF7}
 		{2A796B2C-E5E4-4B62-85CF-3608BCD3A8C3} = {D06611CA-F2A9-4821-BB2F-DB0306EA3FF7}
 		{77C4B392-7685-44FF-A8E5-F85BA8D7DE5C} = {EADFB47E-C177-497F-AC26-1C17E7123FDC}
+		{FD71EF1C-7B8E-4214-A6E7-CB3B42604B19} = {D06611CA-F2A9-4821-BB2F-DB0306EA3FF7}
+		{6315B5FF-BA82-4326-ABED-55D9A018B319} = {D06611CA-F2A9-4821-BB2F-DB0306EA3FF7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AB128F74-17A3-4B21-9D11-43BFF98E99BE}

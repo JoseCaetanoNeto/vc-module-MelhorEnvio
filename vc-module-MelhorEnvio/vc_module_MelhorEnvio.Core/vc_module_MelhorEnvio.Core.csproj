@@ -28,4 +28,8 @@
     <ItemGroup>
         <Folder Include="Events\" />
     </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Geo.Here\Geo.Here.csproj" />
+    </ItemGroup>
 </Project>

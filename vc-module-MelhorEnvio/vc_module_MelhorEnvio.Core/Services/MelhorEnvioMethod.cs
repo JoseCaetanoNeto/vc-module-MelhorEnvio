@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using vc_module_MelhorEnvio.Core.Model;
+using vc_module_MelhorEnvio.Core.Models;
 using VirtoCommerce.CartModule.Core.Model;
 using VirtoCommerce.CoreModule.Core.Common;
 using VirtoCommerce.CustomerModule.Core.Model;
@@ -69,7 +70,7 @@ namespace vc_module_MelhorEnvio.Core
                     ModuleConstants.Settings.MelhorEnvio.StateRegister.DefaultValue.ToString());
             }
         }
-        
+
         private string CompanyDocument
         {
             get
@@ -108,19 +109,20 @@ namespace vc_module_MelhorEnvio.Core
             }
         }
 
-        public MelhorEnvioMethod(ISettingsManager pSettingsManager, IStoreService pStoreService, IFulfillmentCenterService pFulfillmentCenterService, IMemberResolver pMemberResolver) : base(nameof(MelhorEnvioMethod))
+        public MelhorEnvioMethod(ISettingsManager pSettingsManager, IStoreService pStoreService, IFulfillmentCenterService pFulfillmentCenterService, IMemberResolver pMemberResolver, IConversorStandardAddress pStandardAddress) : base(nameof(MelhorEnvioMethod))
         {
             _settingsManager = pSettingsManager;
             _storeService = pStoreService;
             _fulfillmentCenterService = pFulfillmentCenterService;
             _memberResolver = pMemberResolver;
+            _StandardAddress = pStandardAddress;
         }
 
         private readonly ISettingsManager _settingsManager;
         private readonly IStoreService _storeService;
         private readonly IFulfillmentCenterService _fulfillmentCenterService;
         private readonly IMemberResolver _memberResolver;
-
+        private readonly IConversorStandardAddress _StandardAddress;
         public override IEnumerable<ShippingRate> CalculateRates(IEvaluationContext context)
         {
             //if (!(context is ShippingRateEvaluationContext shippingContext))
@@ -175,9 +177,11 @@ namespace vc_module_MelhorEnvio.Core
             string orderNumber = pCustomerOrder.Number;
             string customerId = pCustomerOrder.CustomerId;
             var invoiceKey = pCustomerOrder.DynamicProperties.FirstOrDefault(p => p.Name == ModuleConstants.K_InvoiceKey)?.Values.FirstOrDefault()?.Value;
-            
+
             var customer = _memberResolver.ResolveMemberByIdAsync(customerId).GetAwaiter().GetResult() as Contact;
             var Service = DecodeOptionName(pShipment.ShipmentMethodOption);
+            var stdAddressFulfillmentCenter = _StandardAddress.GetStandardAsync(pFulfillmentCenter.Address).GetAwaiter().GetResult();
+            var stdDeliveryAddress = _StandardAddress.GetStandardAsync(pShipment.DeliveryAddress).GetAwaiter().GetResult();
             var cartIn = new Models.CartIn()
             {
                 Service = Service.ServiceID,
@@ -190,10 +194,10 @@ namespace vc_module_MelhorEnvio.Core
                     EconomicActivityCode = string.IsNullOrWhiteSpace(EconomicActivityCode) ? null : EconomicActivityCode, // CNAE do CNPJ
                     Email = pFulfillmentCenter.Address.Email,
                     Phone = pFulfillmentCenter.Address.Phone,
-                    Address = pFulfillmentCenter.Address.Line1,
-                    Number = pFulfillmentCenter.Address.Key,
-                    Complement = pFulfillmentCenter.Address.Line2,
-                    //District = pFulfillmentCenter.Address.RegionName, // bairro não tem
+                    Address = stdAddressFulfillmentCenter?.Street ?? pFulfillmentCenter.Address.Line1,
+                    Number = (stdAddressFulfillmentCenter != null && !stdAddressFulfillmentCenter.HouseNumberFallback) ? stdAddressFulfillmentCenter.Number : null,
+                    Complement = stdAddressFulfillmentCenter?.Complement ?? pFulfillmentCenter.Address.Line2,
+                    District = stdAddressFulfillmentCenter?.Neighborhood, // bairro 
                     City = pFulfillmentCenter.Address.City,
                     CountryId = CountryCode.ConvertThreeCodeToTwoCode(pFulfillmentCenter.Address.CountryCode),
                     PostalCode = pFulfillmentCenter.Address.PostalCode,
@@ -208,10 +212,10 @@ namespace vc_module_MelhorEnvio.Core
                     //EconomicActivityCode = // CNAE do CNPJ Para casos de envios reversos, deve ser utilizado o parâmetro to.economic_activity_code visto que o remetente passa a ser o próprio recebedor.
                     Email = pShipment.DeliveryAddress.Email,
                     Phone = pShipment.DeliveryAddress.Phone,
-                    Address = pShipment.DeliveryAddress.Line1,
-                    //Number = , // não tem separado, junto da linha 1
-                    Complement = pShipment.DeliveryAddress.Line2,
-                    //District = pShipment.DeliveryAddress., // bairro não tem
+                    Address = (stdDeliveryAddress != null && !stdDeliveryAddress.HouseNumberFallback) ? stdDeliveryAddress.Street : pShipment.DeliveryAddress.Line1,
+                    Number = (stdDeliveryAddress != null && !stdDeliveryAddress.HouseNumberFallback) ? stdDeliveryAddress.Number : null, // não tem separado, junto da linha 1
+                    Complement = (stdDeliveryAddress != null && !stdDeliveryAddress.HouseNumberFallback) ? stdDeliveryAddress.Complement : pShipment.DeliveryAddress.Line2,
+                    District = (stdDeliveryAddress != null && !stdDeliveryAddress.HouseNumberFallback) ? stdDeliveryAddress.Neighborhood : null, // bairro não tem
                     City = pShipment.DeliveryAddress.City,
                     StateAbbr = pShipment.DeliveryAddress.RegionId,
                     CountryId = CountryCode.ConvertThreeCodeToTwoCode(pShipment.DeliveryAddress.CountryCode),
@@ -221,7 +225,7 @@ namespace vc_module_MelhorEnvio.Core
                 options = new Models.CartIn.Options()
                 {
                     InsuranceValue = pShipment.Items.Sum(i => i.LineItem.PriceWithTax), // valor do seguro, deve conter o valor de seguro do envio, que deve corresponder ao valor dos itens/produtos enviados e deverá bater com o valor da NF.
-                    Invoice = invoiceKey != null? new Models.CartIn.Invoice() {  Key = Convert.ToString(invoiceKey) } : null, // deve ser preenchida manualmente no paindel do mercado envio, antes de enviar
+                    Invoice = invoiceKey != null ? new Models.CartIn.Invoice() { Key = Convert.ToString(invoiceKey) } : null, // deve ser preenchida manualmente no paindel do mercado envio, antes de enviar
                     NonCommercial = NonCommercial, // indica se envio é não comercial
                     Platform = pStore.Name,// Nome da Plataforma
                     Tags = new List<Models.CartIn.Tag>() { { new Models.CartIn.Tag() { tag = orderNumber } } }
@@ -229,7 +233,7 @@ namespace vc_module_MelhorEnvio.Core
                 Products = new List<Models.CartIn.Product>(),
                 Volumes = new List<Models.CartIn.Volume>(),
             };
-            if (Service.CompanyID == ModuleConstants.K_Company_CORREIOS) 
+            if (Service.CompanyID == ModuleConstants.K_Company_CORREIOS)
             {
                 return SendCorreios(pShipment, pStore, cartIn);
             }
