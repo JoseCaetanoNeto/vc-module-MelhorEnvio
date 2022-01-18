@@ -159,6 +159,7 @@ namespace vc_module_MelhorEnvio.Core
                     }
                 }
             }
+            retList.Sort((o1, o2) => o1.Rate.CompareTo(o2.Rate));
             return retList;
         }
 
