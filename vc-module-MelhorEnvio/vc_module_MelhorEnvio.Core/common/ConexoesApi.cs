@@ -41,7 +41,7 @@ namespace vc_module_MelhorEnvio.Core
                     client.Encoding = System.Text.Encoding.UTF8;
                     client.Headers[HttpRequestHeader.Accept] = "application/json";
                     client.Headers[HttpRequestHeader.ContentType] = "application/json";
-                    client.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate, br");
+                    client.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate");
                     //client.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
 
                     if (!string.IsNullOrEmpty(pAuthorization))
@@ -123,7 +123,7 @@ namespace vc_module_MelhorEnvio.Core
             protected override WebRequest GetWebRequest(Uri address)
             {
                 HttpWebRequest request = base.GetWebRequest(address) as HttpWebRequest;
-                request.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
+                request.AutomaticDecompression = DecompressionMethods.All;
                 return request;
             }
         }
