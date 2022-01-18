@@ -206,7 +206,7 @@ namespace vc_module_MelhorEnvio.Core
                 },
                 to = new Models.CartIn.To()
                 {
-                    Name = customer.Name,
+                    Name = string.Join(" ", pShipment.DeliveryAddress.FirstName, pShipment.DeliveryAddress.LastName),
                     Document = customer.TaxPayerId, // CPF pessoa fisica,
                     //StateRegister = "", // inscrição estadual
                     //CompanyDocument = "", // CNPJ, parametro
