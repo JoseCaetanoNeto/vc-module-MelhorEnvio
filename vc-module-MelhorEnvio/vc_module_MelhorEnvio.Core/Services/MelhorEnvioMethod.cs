@@ -213,10 +213,10 @@ namespace vc_module_MelhorEnvio.Core
                     //EconomicActivityCode = // CNAE do CNPJ Para casos de envios reversos, deve ser utilizado o parâmetro to.economic_activity_code visto que o remetente passa a ser o próprio recebedor.
                     Email = pShipment.DeliveryAddress.Email,
                     Phone = pShipment.DeliveryAddress.Phone,
-                    Address = (stdDeliveryAddress != null && !stdDeliveryAddress.HouseNumberFallback) ? stdDeliveryAddress.Street : pShipment.DeliveryAddress.Line1,
-                    Number = (stdDeliveryAddress != null && !stdDeliveryAddress.HouseNumberFallback) ? stdDeliveryAddress.Number : null, // não tem separado, junto da linha 1
-                    Complement = (stdDeliveryAddress != null && !stdDeliveryAddress.HouseNumberFallback) ? stdDeliveryAddress.Complement : pShipment.DeliveryAddress.Line2,
-                    District = (stdDeliveryAddress != null && !stdDeliveryAddress.HouseNumberFallback) ? stdDeliveryAddress.Neighborhood : null, // bairro não tem
+                    Address = (stdDeliveryAddress != null && stdDeliveryAddress.Number != null && !stdDeliveryAddress.HouseNumberFallback) ? stdDeliveryAddress.Street : pShipment.DeliveryAddress.Line1,
+                    Number = (stdDeliveryAddress != null && stdDeliveryAddress.Number != null && !stdDeliveryAddress.HouseNumberFallback) ? stdDeliveryAddress.Number : null, // não tem separado, junto da linha 1
+                    Complement = (stdDeliveryAddress != null && stdDeliveryAddress.Number != null && !stdDeliveryAddress.HouseNumberFallback) ? stdDeliveryAddress.Complement : pShipment.DeliveryAddress.Line2,
+                    District = (stdDeliveryAddress != null && stdDeliveryAddress.Number != null && !stdDeliveryAddress.HouseNumberFallback) ? stdDeliveryAddress.Neighborhood : null, // bairro não tem
                     City = pShipment.DeliveryAddress.City,
                     StateAbbr = pShipment.DeliveryAddress.RegionId,
                     CountryId = CountryCode.ConvertThreeCodeToTwoCode(pShipment.DeliveryAddress.CountryCode),

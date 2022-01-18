@@ -19,7 +19,7 @@ namespace vc_module_MelhorEnvio.Web.Controllers.Api
     public class AuthorizationController : Controller
     {
         private const string _state = "vc30";
-        private const string _scope = "cart-read cart-write shipping-calculate shipping-cancel shipping-checkout shipping-companies shipping-generate shipping-preview shipping-print shipping-share shipping-tracking ecommerce-shipping transactions-read";
+        private const string _scope = "purchases-read orders-read products-read cart-read cart-write shipping-calculate shipping-cancel shipping-checkout shipping-companies shipping-generate shipping-preview shipping-print shipping-share shipping-tracking ecommerce-shipping transactions-read";
 
         private readonly ISettingsManager _settingsManager;
         private readonly IShippingMethodsSearchService _ShippingMethodsSearchService;
