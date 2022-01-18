@@ -22,7 +22,7 @@ namespace vc_module_MelhorEnvio.Core.Services
         public async Task<AddressStandardModel> GetStandardAsync(Address pAddress)
         {
             var query = string.Join(',', pAddress.Line1, pAddress.Line2, pAddress.City, pAddress.RegionId, pAddress.PostalCode, pAddress.CountryName);
-            string key = CacheKey.With(GetType(), nameof(GetStandardAsync), query);
+            string key = CacheKey.With(GetType(), "vc_module_MelhorEnvio.Core.Services.", nameof(GetStandardAsync), query);
             var result = await _platformMemoryCache.GetOrCreateExclusiveAsync(key, async (cacheEntry) =>
             {
                 var resultHere = (await _hereGeocoding.GeocodingAsync(new Geo.Here.Models.Parameters.GeocodeParameters() { Query = query }))?.Items.FirstOrDefault();
