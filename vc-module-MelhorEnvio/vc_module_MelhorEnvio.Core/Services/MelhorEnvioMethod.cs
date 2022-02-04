@@ -300,7 +300,7 @@ namespace vc_module_MelhorEnvio.Core
                     {
                         Height = Convert.ToInt32(Package.Height),
                         Length = Convert.ToInt32(Package.Length),
-                        Weight = Convert.ToInt32(Package.Weight),
+                        Weight = Convert.ToDouble(Package.Weight),
                         Width = Convert.ToInt32(Package.Width)
                     });
 
@@ -346,7 +346,7 @@ namespace vc_module_MelhorEnvio.Core
                 {
                     Height = Convert.ToInt32(Package.Height),
                     Length = Convert.ToInt32(Package.Length),
-                    Weight = Convert.ToInt32(Package.Weight),
+                    Weight = Convert.ToDouble(Package.Weight),
                     Width = Convert.ToInt32(Package.Width)
                 });
             }
