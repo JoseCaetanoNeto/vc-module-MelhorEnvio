@@ -51,13 +51,11 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
         private readonly ICustomerOrderService _customerOrderService;
         private readonly IStoreService _storeService;
         private readonly ISettingsManager _settingsManager;
-        private readonly ICustomerOrderService _orderService;
         private readonly INotificationSearchService _notificationSearchService;
         private readonly INotificationSender _notificationSender;
-        private readonly IMemberService _memberService;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IMemberResolver _memberResolver;
 
-        public TrackingJob(ISettingsManager settingsManager, IStoreService storeService, ICustomerOrderService customerOrderService, ILogger<TrackingJob> log, Func<IOrderRepository> repositoryFactory, IShippingMethodsSearchService shippingMethodsSearchService, ICustomerOrderService orderService, INotificationSearchService notificationSearchService, INotificationSender notificationSender, IMemberService memberService, UserManager<ApplicationUser> userManager)
+        public TrackingJob(ISettingsManager settingsManager, IStoreService storeService, ICustomerOrderService customerOrderService, ILogger<TrackingJob> log, Func<IOrderRepository> repositoryFactory, IShippingMethodsSearchService shippingMethodsSearchService, INotificationSearchService notificationSearchService, INotificationSender notificationSender, IMemberResolver pMemberResolver)
         {
             _settingsManager = settingsManager;
             _storeService = storeService;
@@ -65,11 +63,9 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
             _log = log;
             _repositoryFactory = repositoryFactory;
             _shippingMethodsSearchService = shippingMethodsSearchService;
-            _orderService = orderService;
             _notificationSearchService = notificationSearchService;
             _notificationSender = notificationSender;
-            _memberService = memberService;
-            _userManager = userManager;
+            _memberResolver = pMemberResolver;
         }
 
         [DisableConcurrentExecution(10)]
@@ -227,7 +223,7 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
 
         public virtual async Task TryToSendOrderNotificationsAsync(OrderNotificationJobArgument[] jobArguments)
         {
-            var ordersByIdDict = (await _orderService.GetByIdsAsync(jobArguments.Select(x => x.CustomerOrderId).Distinct().ToArray()))
+            var ordersByIdDict = (await _customerOrderService.GetByIdsAsync(jobArguments.Select(x => x.CustomerOrderId).Distinct().ToArray()))
                                 .ToDictionary(x => x.Id)
                                 .WithDefaultValue(null);
 
@@ -240,13 +236,13 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
 
                     if (order != null && notification is OrderEmailNotificationBase orderNotification)
                     {
-                        var customer = await GetCustomerAsync(jobArgument.CustomerId);
+                        var customer = _memberResolver.ResolveMemberByIdAsync(jobArgument.CustomerId).GetAwaiter().GetResult();
 
                         orderNotification.CustomerOrder = order;
                         orderNotification.Customer = customer;
                         orderNotification.LanguageCode = order.LanguageCode;
 
-                        await SetNotificationParametersAsync(notification, order);
+                        await SetNotificationParametersAsync(notification, order, customer);
                         await _notificationSender.ScheduleSendNotificationAsync(notification);
                     }
                 }
@@ -258,14 +254,14 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
         /// </summary>
         /// <param name="notification"></param>
         /// <param name="order"></param>
-        protected virtual async Task SetNotificationParametersAsync(Notification notification, CustomerOrder order)
+        protected virtual async Task SetNotificationParametersAsync(Notification notification, CustomerOrder order, Member pCustomer)
         {
             var store = await _storeService.GetByIdAsync(order.StoreId, StoreResponseGroup.StoreInfo.ToString());
 
             if (notification is EmailNotification emailNotification)
             {
                 emailNotification.From = store.EmailWithName;
-                emailNotification.To = await GetOrderRecipientEmailAsync(order);
+                emailNotification.To = GetOrderRecipientEmail(order, pCustomer);
             }
 
             // Allow to filter notification log either by customer order or by subscription
@@ -279,9 +275,10 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
             }
         }
 
-        protected virtual async Task<string> GetOrderRecipientEmailAsync(CustomerOrder order)
+        protected virtual string GetOrderRecipientEmail(CustomerOrder order, Member pCustomer)
         {
-            var email = GetOrderAddressEmail(order) ?? await GetCustomerEmailAsync(order.CustomerId);
+
+            var email = GetOrderAddressEmail(order) ?? pCustomer?.Emails?.FirstOrDefault();
             return email;
         }
 
@@ -289,40 +286,7 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
         {
             var email = order.Addresses?.Select(x => x.Email).FirstOrDefault(x => !string.IsNullOrEmpty(x));
             return email;
-        }
-
-        protected virtual async Task<string> GetCustomerEmailAsync(string customerId)
-        {
-            var customer = await GetCustomerAsync(customerId);
-
-            if (customer == null)
-            {
-                // try to find user
-                var user = await _userManager.FindByIdAsync(customerId);
-
-                return user?.Email;
-            }
-
-            return customer?.Emails?.FirstOrDefault();
-        }
-
-        protected virtual async Task<Member> GetCustomerAsync(string customerId)
-        {
-            // Try to find contact
-            var result = await _memberService.GetByIdAsync(customerId);
-
-            if (result == null)
-            {
-                var user = await _userManager.FindByIdAsync(customerId);
-
-                if (user != null)
-                {
-                    result = await _memberService.GetByIdAsync(user.MemberId);
-                }
-            }
-
-            return result;
-        }
+        }        
     }
 
     public class OrderNotificationJobArgument
