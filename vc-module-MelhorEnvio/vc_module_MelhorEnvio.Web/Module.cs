@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using FluentValidation;
 using Geo.Here.DependencyInjection;
 using Hangfire;
@@ -73,6 +75,11 @@ namespace vc_module_MelhorEnvio.Web
 
         public void PostInitialize(IApplicationBuilder appBuilder)
         {
+            var settingsManager = appBuilder.ApplicationServices.GetRequiredService<ISettingsManager>();
+            var order_status = new List<string>(new[] { string.Empty });
+            order_status.AddRange(settingsManager.GetObjectSettingAsync(VirtoCommerce.OrdersModule.Core.ModuleConstants.Settings.General.ShipmentStatus.Name).GetAwaiter().GetResult().AllowedValues.Select( i => i.ToString()));
+            ModuleConstants.Settings.AllSettings.FirstOrDefault(s => s.Name == ModuleConstants.Settings.MelhorEnvio.SendDataOnShippingStatus.Name).AllowedValues = order_status.ToArray();
+
             // register settings
             var settingsRegistrar = appBuilder.ApplicationServices.GetRequiredService<ISettingsRegistrar>();
             settingsRegistrar.RegisterSettings(ModuleConstants.Settings.AllSettings, ModuleInfo.Id);
@@ -81,7 +88,6 @@ namespace vc_module_MelhorEnvio.Web
 
 
             var recurringJobManager = appBuilder.ApplicationServices.GetService<IRecurringJobManager>();
-            var settingsManager = appBuilder.ApplicationServices.GetRequiredService<ISettingsManager>();
             var memberResolver = appBuilder.ApplicationServices.GetRequiredService<IMemberResolver>();
 
             recurringJobManager.WatchJobSetting(
