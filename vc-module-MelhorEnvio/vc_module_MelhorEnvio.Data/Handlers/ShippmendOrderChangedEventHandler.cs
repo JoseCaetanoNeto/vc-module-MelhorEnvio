@@ -247,8 +247,8 @@ namespace vc_module_MelhorEnvio.Data.Handlers
 
                     foreach (var product in Package.Products)
                     {
-                        var LineItem = Items.FirstOrDefault(i => i.Id == product.Id);
-                        var item = new ShipmentItem() { LineItemId = product.Id, LineItem = LineItem, Quantity = product.Quantity };
+                        var LineItem = Items.FirstOrDefault(i => i.ProductId == product.Id);
+                        var item = new ShipmentItem() { LineItemId = LineItem.Id, LineItem = LineItem, Quantity = product.Quantity };
                         shipPack.Items.Add(item);
                     }
                     shipment.Packages.Add(shipPack);

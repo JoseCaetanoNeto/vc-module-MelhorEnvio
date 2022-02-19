@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,7 @@ using VirtoCommerce.CustomerModule.Core.Model;
 using VirtoCommerce.CustomerModule.Core.Services;
 using VirtoCommerce.InventoryModule.Core.Model;
 using VirtoCommerce.InventoryModule.Core.Services;
+using VirtoCommerce.Platform.Core.Caching;
 using VirtoCommerce.Platform.Core.Settings;
 using VirtoCommerce.ShippingModule.Core.Model;
 using VirtoCommerce.StoreModule.Core.Model;
@@ -109,13 +111,14 @@ namespace vc_module_MelhorEnvio.Core
             }
         }
 
-        public MelhorEnvioMethod(ISettingsManager pSettingsManager, IStoreService pStoreService, IFulfillmentCenterService pFulfillmentCenterService, IMemberResolver pMemberResolver, IConversorStandardAddress pStandardAddress) : base(nameof(MelhorEnvioMethod))
+        public MelhorEnvioMethod(ISettingsManager pSettingsManager, IStoreService pStoreService, IFulfillmentCenterService pFulfillmentCenterService, IMemberResolver pMemberResolver, IConversorStandardAddress pStandardAddress, IPlatformMemoryCache pPlatformMemoryCache) : base(nameof(MelhorEnvioMethod))
         {
             _settingsManager = pSettingsManager;
             _storeService = pStoreService;
             _fulfillmentCenterService = pFulfillmentCenterService;
             _memberResolver = pMemberResolver;
             _StandardAddress = pStandardAddress;
+            _platformMemoryCache = pPlatformMemoryCache;
         }
 
         private readonly ISettingsManager _settingsManager;
@@ -123,6 +126,8 @@ namespace vc_module_MelhorEnvio.Core
         private readonly IFulfillmentCenterService _fulfillmentCenterService;
         private readonly IMemberResolver _memberResolver;
         private readonly IConversorStandardAddress _StandardAddress;
+        private readonly IPlatformMemoryCache _platformMemoryCache;
+
         public override IEnumerable<ShippingRate> CalculateRates(IEvaluationContext context)
         {
             //if (!(context is ShippingRateEvaluationContext shippingContext))
@@ -225,7 +230,7 @@ namespace vc_module_MelhorEnvio.Core
                 },
                 options = new Models.CartIn.Options()
                 {
-                    InsuranceValue = pShipment.Items.Sum(i => i.LineItem.PriceWithTax), // valor do seguro, deve conter o valor de seguro do envio, que deve corresponder ao valor dos itens/produtos enviados e deverá bater com o valor da NF.
+                    InsuranceValue = pShipment.Items.Sum(i => i.LineItem.ExtendedPriceWithTax), // valor do seguro, deve conter o valor de seguro do envio, que deve corresponder ao valor dos itens/produtos enviados e deverá bater com o valor da NF.
                     Invoice = invoiceKey != null ? new Models.CartIn.Invoice() { Key = Convert.ToString(invoiceKey) } : null, // deve ser preenchida manualmente no paindel do mercado envio, antes de enviar
                     NonCommercial = NonCommercial, // indica se envio é não comercial
                     Platform = pStore.Name,// Nome da Plataforma
@@ -296,6 +301,8 @@ namespace vc_module_MelhorEnvio.Core
                 if (string.IsNullOrEmpty(Package2.TrackingCode)) // caso já tenha o número de tack já foi enviado anteriormente
                 {
                     cartIn.Volumes.Clear();
+                    cartIn.Products.Clear();
+
                     cartIn.Volumes.Add(new Models.CartIn.Volume()
                     {
                         Height = Convert.ToInt32(Package.Height),
@@ -307,12 +314,11 @@ namespace vc_module_MelhorEnvio.Core
                     foreach (var item in Package.Items)
                     {
                         var lineItem = pShipment.Items.FirstOrDefault(i => i.LineItemId == item.LineItemId).LineItem;
-                        cartIn.Products.Clear();
                         cartIn.Products.Add(new Models.CartIn.Product()
                         {
                             Name = lineItem.Name, // item.LineItem is null, workaround
                             Quantity = item.Quantity,
-                            UnitaryValue = lineItem.PriceWithTax
+                            UnitaryValue = lineItem.PriceWithTax - lineItem.DiscountAmount
                         });
                     }
 
@@ -332,7 +338,7 @@ namespace vc_module_MelhorEnvio.Core
                 {
                     Name = lineItem.Name, // item.LineItem is null, workaround
                     Quantity = item.Quantity,
-                    UnitaryValue = lineItem.PriceWithTax //  item.LineItem is null, workaround
+                    UnitaryValue = lineItem.PriceWithTax - lineItem.DiscountAmount//  item.LineItem is null, workaround
                 });
             }
             bool generateCall = false;
@@ -366,29 +372,38 @@ namespace vc_module_MelhorEnvio.Core
 
         private Models.CalculateOut CalculateInt(Store pStore, string pShipmentPostalCode, string fulfillmentCenterPostalCode, List<Models.CalculateIn.Product> pItems)
         {
-            Models.CalculateIn calc = new Models.CalculateIn()
+            var list = pItems.Select(o => CacheKey.With(o.Id, o.Quantity.ToString(), o.InsuranceValue.ToString())).Distinct().ToList();
+            list.Sort();
+            string key = CacheKey.With(GetType(), nameof(CalculateInt), pShipmentPostalCode, fulfillmentCenterPostalCode, string.Join('-', list));
+            var result = _platformMemoryCache.GetOrCreateExclusive(key, (cacheEntry) =>
             {
-                from = new Models.CalculateIn.From()
+                Models.CalculateIn calc = new Models.CalculateIn()
                 {
-                    PostalCode = fulfillmentCenterPostalCode
-                },
-                to = new Models.CalculateIn.To()
+                    from = new Models.CalculateIn.From()
+                    {
+                        PostalCode = fulfillmentCenterPostalCode
+                    },
+                    to = new Models.CalculateIn.To()
+                    {
+                        PostalCode = pShipmentPostalCode
+                    },
+                    Products = new List<Models.CalculateIn.Product>(),
+                    options = new Models.CalculateIn.Options { OwnHand = false, Receipt = false },
+                };
+
+                calc.Products.AddRange(pItems);
+
+                if (calc.Products.Count > 0)
                 {
-                    PostalCode = pShipmentPostalCode
-                },
-                Products = new List<Models.CalculateIn.Product>(),
-                options = new Models.CalculateIn.Options { OwnHand = false, Receipt = false },
-            };
-
-            calc.Products.AddRange(pItems);
-
-            if (calc.Products.Count > 0)
-            {
-                MelhorEnvioApi mes = new MelhorEnvioApi(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
-                mes.onSaveNewToken = SaveToken;
-                return mes.Calculate(calc);
-            }
-            return new Models.CalculateOut();
+                    MelhorEnvioApi mes = new MelhorEnvioApi(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
+                    mes.onSaveNewToken = SaveToken;
+                    var resultInt = mes.Calculate(calc);
+                    cacheEntry.SetAbsoluteExpiration(DateTimeOffset.UtcNow.AddMinutes(10));
+                    return resultInt;
+                }
+                return new Models.CalculateOut();
+            });
+            return result;
         }
 
         private List<Models.CalculateIn.Product> ToItems(ICollection<LineItem> pItems, FulfillmentCenter fulfillmentCenter)
@@ -400,7 +415,7 @@ namespace vc_module_MelhorEnvio.Core
                 {
                     list.Add(new Models.CalculateIn.Product()
                     {
-                        Id = item.Id,
+                        Id = item.ProductId,
                         Weight = ConvertToKg(item.Weight, item.WeightUnit),
                         Height = ConvertToCm(item.Height, item.MeasureUnit),
                         Width = ConvertToCm(item.Width, item.MeasureUnit),
@@ -422,7 +437,7 @@ namespace vc_module_MelhorEnvio.Core
                 {
                     list.Add(new Models.CalculateIn.Product()
                     {
-                        Id = item.Id,
+                        Id = item.ProductId,
                         Weight = ConvertToKg(item.Weight, item.WeightUnit),
                         Height = ConvertToCm(item.Height, item.MeasureUnit),
                         Width = ConvertToCm(item.Width, item.MeasureUnit),

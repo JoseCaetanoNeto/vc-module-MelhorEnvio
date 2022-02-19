@@ -26,6 +26,7 @@ using VirtoCommerce.OrdersModule.Core.Model;
 using VirtoCommerce.OrdersModule.Data.Model;
 using VirtoCommerce.OrdersModule.Data.Repositories;
 using VirtoCommerce.Platform.Core.Bus;
+using VirtoCommerce.Platform.Core.Caching;
 using VirtoCommerce.Platform.Core.Common;
 using VirtoCommerce.Platform.Core.Modularity;
 using VirtoCommerce.Platform.Core.Settings;
@@ -104,9 +105,10 @@ namespace vc_module_MelhorEnvio.Web
             // register ShippingMethod
             var shippingMethodsRegistrar = appBuilder.ApplicationServices.GetRequiredService<IShippingMethodsRegistrar>();
             var standardAddress = appBuilder.ApplicationServices.GetRequiredService<IConversorStandardAddress>();
-             
+            var platformMemoryCache = appBuilder.ApplicationServices.GetRequiredService<IPlatformMemoryCache>();
 
-            shippingMethodsRegistrar.RegisterShippingMethod(() => new MelhorEnvioMethod(settingsManager, appBuilder.ApplicationServices.GetRequiredService<IStoreService>(), appBuilder.ApplicationServices.GetRequiredService<IFulfillmentCenterService>(), memberResolver, standardAddress));
+
+            shippingMethodsRegistrar.RegisterShippingMethod(() => new MelhorEnvioMethod(settingsManager, appBuilder.ApplicationServices.GetRequiredService<IStoreService>(), appBuilder.ApplicationServices.GetRequiredService<IFulfillmentCenterService>(), memberResolver, standardAddress, platformMemoryCache));
 
             var inProcessBus = appBuilder.ApplicationServices.GetService<IHandlerRegistrar>();
             inProcessBus.RegisterHandler<OrderChangedEvent>((message, token) => appBuilder.ApplicationServices.GetService<ShippmendOrderChangedEventHandler>().Handle(message));
