@@ -40,7 +40,7 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
         private const string k_ReadyToSendStatus = "ReadyToSend";
 
         private const string k_SentOrderStatus = "Sent";
-        private const string k_ProcessingOrderStatus = "Processing";
+        private const string k_CompletedOrderStatus = "Completed";
         private const string k_PartiallySentOrderStatus = "PartiallySent";
         private const string k_ReadyToSendOrderStatus = "ReadyToSend";
         private const string K_CompletedOrderStatus = "Completed";
@@ -192,7 +192,7 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
                             {
                                 var list = new List<string>() { { k_PaidStatus } };
                                 Package.PackageState = k_PaidStatus;
-                                if (CustomerOrde.Status == k_ProcessingOrderStatus && Shipment.Packages.All(s => list.Contains((s as ShipmentPackage2).PackageState)))
+                                if (CustomerOrde.Status != k_CompletedOrderStatus && Shipment.Packages.All(s => list.Contains((s as ShipmentPackage2).PackageState)))
                                 {
                                     CustomerOrde.Status = k_ReadyToSendOrderStatus;
                                 }
