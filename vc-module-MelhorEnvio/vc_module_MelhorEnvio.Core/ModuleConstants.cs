@@ -12,6 +12,8 @@ namespace vc_module_MelhorEnvio.Core
         public const string K_DefaultCancelReason = "Cliente desistiu da compra";
 
         public const int K_Company_CORREIOS = 1;
+        public const int K_Company_JADLOG = 2;
+        public const int K_Company_AZULEXPRES = 9;
 
         public const string K_InvoiceKey = "InvoiceKey";
 
@@ -124,6 +126,24 @@ namespace vc_module_MelhorEnvio.Core
                     DefaultValue = "0/15 * * * *"
                 };
 
+                public static readonly SettingDescriptor AgencyAzul = new SettingDescriptor
+                {
+                    Name = "vcmoduleMelhorEnvio.AgencyAzul",
+                    GroupName = "vcmoduleMelhorEnvio|General",
+                    ValueType = SettingValueType.Integer,
+                    DefaultValue = null // "id" : 5627, "name" : "CPVF2", "address.label" : "Agncia Azul Cargo"
+                    // curl -k --location -g --request GET 'https://www.melhorenvio.com.br/api/v2/me/shipment/agencies?company=9&country=BR&state=PB&city=Campina Grande' | json_pp | more
+                };
+
+                public static readonly SettingDescriptor AgencyJadLog = new SettingDescriptor
+                {
+                    Name = "vcmoduleMelhorEnvio.AgencyJadLog",
+                    GroupName = "vcmoduleMelhorEnvio|General",
+                    ValueType = SettingValueType.Integer,
+                    DefaultValue = null // "id" : 13313, "name" : "LJ CAMPINA GRANDE 01", "address.label" : "Unidade Jadlog",
+                    // curl -k --location -g --request GET 'https://www.melhorenvio.com.br/api/v2/me/shipment/agencies?company=2&country=BR&state=PB&city=Campina Grande' | json_pp | more
+                };
+
                 public static IEnumerable<SettingDescriptor> Settings
                 {
                     get
@@ -138,7 +158,9 @@ namespace vc_module_MelhorEnvio.Core
                             NonCommercial,
                             Document,
                             SendDataOnShippingStatus,
-                            Sandbox
+                            Sandbox,
+                            AgencyJadLog,
+                            AgencyAzul
                         };
                     }
                 }

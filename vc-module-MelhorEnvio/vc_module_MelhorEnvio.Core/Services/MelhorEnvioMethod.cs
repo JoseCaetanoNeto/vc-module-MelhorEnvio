@@ -111,6 +111,26 @@ namespace vc_module_MelhorEnvio.Core
             }
         }
 
+        public int? AgencyJadLog
+        {
+            get
+            {
+                if (int.TryParse(Convert.ToString(Settings?.GetSettingValue(ModuleConstants.Settings.MelhorEnvio.AgencyJadLog.Name, ModuleConstants.Settings.MelhorEnvio.AgencyJadLog.DefaultValue)), out int intOut))
+                    return intOut;
+                return null;
+            }
+        }
+
+        public int? AgencyAzul
+        {
+            get
+            {
+                if (int.TryParse(Convert.ToString(Settings?.GetSettingValue(ModuleConstants.Settings.MelhorEnvio.AgencyAzul.Name, ModuleConstants.Settings.MelhorEnvio.AgencyAzul.DefaultValue)), out int intOut))
+                    return intOut;
+                return null;
+            }
+        }
+
         public MelhorEnvioMethod(ISettingsManager pSettingsManager, IStoreService pStoreService, IFulfillmentCenterService pFulfillmentCenterService, IMemberResolver pMemberResolver, IConversorStandardAddress pStandardAddress, IPlatformMemoryCache pPlatformMemoryCache) : base(nameof(MelhorEnvioMethod))
         {
             _settingsManager = pSettingsManager;
@@ -191,6 +211,7 @@ namespace vc_module_MelhorEnvio.Core
             var cartIn = new Models.CartIn()
             {
                 Service = Service.ServiceID,
+                Agency = GetAgency(Service),
                 from = new Models.CartIn.From()
                 {
                     Name = pStore.Name,
@@ -498,6 +519,18 @@ namespace vc_module_MelhorEnvio.Core
             return new ServiceOption(0, 0, string.Empty, string.Empty);
         }
 
+        private int? GetAgency(ServiceOption pService)
+        {
+            switch (pService.CompanyID)
+            {
+                case ModuleConstants.K_Company_JADLOG:
+                    return AgencyJadLog;
+                case ModuleConstants.K_Company_AZULEXPRES:
+                    return AgencyAzul;
+                default:
+                    return null;
+            }
+        }
     }
 
     public class ServiceOption

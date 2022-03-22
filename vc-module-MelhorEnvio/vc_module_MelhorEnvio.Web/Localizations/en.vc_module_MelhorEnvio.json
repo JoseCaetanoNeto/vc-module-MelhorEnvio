@@ -48,6 +48,14 @@
         "title": "Cron expression for processing job execution",
         "description": "The value is a regular CRON expression.\nTo run task every X minutes please use \"0/x * * * *\".\nTo run it every X hours at 00 minutes use \"0 */X * * *\". You can also specify minutes: \"15 */x * * *\"\nTo run it every X days at midnight use \"0 0 */x * *\""
       },
+      "AgencyAzul": {
+        "title": "Id da Agencia de envio utilizada da azul Express",
+        "description": "consultar api https://www.melhorenvio.com.br/api/v2/me/shipment/agencies, exemplo: curl -k --location -g --request GET 'https://www.melhorenvio.com.br/api/v2/me/shipment/agencies?company=9&country=BR&state=PB&city=Campina Grande' | json_pp | more"
+      },
+      "AgencyJadLog": {
+        "title": "Id da Agencia de envio utilizada da Jadlog",
+        "description": "consultar api https://www.melhorenvio.com.br/api/v2/me/shipment/agencies, exemplo: curl -k --location -g --request GET 'https://www.melhorenvio.com.br/api/v2/me/shipment/agencies?company=2&country=BR&state=PB&city=Campina Grande' | json_pp | more"
+      },
       "client_id": {
         "title": "client_id",
         "description": ""
