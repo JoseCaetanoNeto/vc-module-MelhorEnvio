@@ -1,13 +1,12 @@
-using System.Collections.Generic;
-using System.Linq;
 using FluentValidation;
 using Geo.Here.DependencyInjection;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Generic;
+using System.Linq;
 using vc_module_MelhorEnvio.Core;
 using vc_module_MelhorEnvio.Core.Model;
 using vc_module_MelhorEnvio.Core.Models;
@@ -28,12 +27,13 @@ using VirtoCommerce.OrdersModule.Data.Repositories;
 using VirtoCommerce.Platform.Core.Bus;
 using VirtoCommerce.Platform.Core.Caching;
 using VirtoCommerce.Platform.Core.Common;
+using VirtoCommerce.Platform.Core.GenericCrud;
 using VirtoCommerce.Platform.Core.Modularity;
 using VirtoCommerce.Platform.Core.Settings;
 using VirtoCommerce.Platform.Hangfire;
 using VirtoCommerce.Platform.Hangfire.Extensions;
 using VirtoCommerce.ShippingModule.Core.Services;
-using VirtoCommerce.StoreModule.Core.Services;
+using VirtoCommerce.StoreModule.Core.Model;
 
 namespace vc_module_MelhorEnvio.Web
 {
@@ -108,7 +108,7 @@ namespace vc_module_MelhorEnvio.Web
             var platformMemoryCache = appBuilder.ApplicationServices.GetRequiredService<IPlatformMemoryCache>();
 
 
-            shippingMethodsRegistrar.RegisterShippingMethod(() => new MelhorEnvioMethod(settingsManager, appBuilder.ApplicationServices.GetRequiredService<IStoreService>(), appBuilder.ApplicationServices.GetRequiredService<IFulfillmentCenterService>(), memberResolver, standardAddress, platformMemoryCache));
+            shippingMethodsRegistrar.RegisterShippingMethod(() => new MelhorEnvioMethod(settingsManager, appBuilder.ApplicationServices.GetRequiredService<ICrudService<Store>>(), appBuilder.ApplicationServices.GetRequiredService<IFulfillmentCenterService>(), memberResolver, standardAddress, platformMemoryCache));
 
             var inProcessBus = appBuilder.ApplicationServices.GetService<IHandlerRegistrar>();
             inProcessBus.RegisterHandler<OrderChangedEvent>((message, token) => appBuilder.ApplicationServices.GetService<ShippmendOrderChangedEventHandler>().Handle(message));

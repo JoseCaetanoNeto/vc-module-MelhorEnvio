@@ -7,11 +7,10 @@ using vc_module_MelhorEnvio.Core;
 using vc_module_MelhorEnvio.Core.Model;
 using VirtoCommerce.OrdersModule.Core.Events;
 using VirtoCommerce.OrdersModule.Core.Model;
-using VirtoCommerce.OrdersModule.Core.Services;
 using VirtoCommerce.Platform.Core.Common;
 using VirtoCommerce.Platform.Core.Events;
+using VirtoCommerce.Platform.Core.GenericCrud;
 using VirtoCommerce.StoreModule.Core.Model;
-using VirtoCommerce.StoreModule.Core.Services;
 
 namespace vc_module_MelhorEnvio.Data.Handlers
 {
@@ -23,8 +22,8 @@ namespace vc_module_MelhorEnvio.Data.Handlers
     /// </summary>
     public class ShippmendCancelOrderEventHandler : IEventHandler<OrderChangedEvent>
     {
-        private readonly IStoreService _storeService;
-        private readonly ICustomerOrderService _orderService;
+        private readonly ICrudService<Store> _storeService;
+        private readonly ICrudService<CustomerOrder> _orderService;
 
         /// <summary>
         /// Constructor.
@@ -33,7 +32,7 @@ namespace vc_module_MelhorEnvio.Data.Handlers
         /// <param name="storeService">Implementation of store service.</param>
         /// <param name="settingsManager">Implementation of settings manager.</param>
         /// <param name="itemService">Implementation of item service</param>
-        public ShippmendCancelOrderEventHandler(IStoreService storeService, ICustomerOrderService orderService)
+        public ShippmendCancelOrderEventHandler(ICrudService<Store> storeService, ICrudService<CustomerOrder> orderService)
         {
             _storeService = storeService;
             _orderService = orderService;
@@ -83,10 +82,10 @@ namespace vc_module_MelhorEnvio.Data.Handlers
 
         public virtual async Task TryToCancelOrderSendsAsync(ShipmentToCancelJobArgument[] jobArguments)
         {
-            var ordersByIdDict = (await _orderService.GetByIdsAsync(jobArguments.Select(x => x.CustomerOrderId).Distinct().ToArray()))
+            var ordersByIdDict = (await _orderService.GetAsync(jobArguments.Select(x => x.CustomerOrderId).Distinct().ToList()))
                                 .ToDictionary(x => x.Id).WithDefaultValue(null);
             
-            var storesByIdDict = (await _storeService.GetByIdsAsync(jobArguments.Select(x => x.StoreId).Distinct().ToArray()))
+            var storesByIdDict = (await _storeService.GetAsync(jobArguments.Select(x => x.StoreId).Distinct().ToList()))
                                 .ToDictionary(x => x.Id).WithDefaultValue(null);
 
             var changedOrders = new List<CustomerOrder>();

@@ -4,17 +4,19 @@ using System.Linq;
 using System.Threading.Tasks;
 using vc_module_MelhorEnvio.Core;
 using vc_module_MelhorEnvio.Core.Model;
+using VirtoCommerce.InventoryModule.Core.Model;
 using VirtoCommerce.InventoryModule.Core.Services;
 using VirtoCommerce.OrdersModule.Core.Events;
 using VirtoCommerce.OrdersModule.Core.Model;
-using VirtoCommerce.OrdersModule.Core.Services;
 using VirtoCommerce.PaymentModule.Core.Model;
 using VirtoCommerce.Platform.Core.Common;
 using VirtoCommerce.Platform.Core.Events;
+using VirtoCommerce.Platform.Core.GenericCrud;
 using VirtoCommerce.Platform.Core.Settings;
+using VirtoCommerce.ShippingModule.Core.Model;
 using VirtoCommerce.ShippingModule.Core.Model.Search;
 using VirtoCommerce.ShippingModule.Core.Services;
-using VirtoCommerce.StoreModule.Core.Services;
+using VirtoCommerce.StoreModule.Core.Model;
 
 namespace vc_module_MelhorEnvio.Data.Handlers
 {
@@ -39,10 +41,10 @@ namespace vc_module_MelhorEnvio.Data.Handlers
     public class ShippmendOrderChangedEventHandler : IEventHandler<OrderChangedEvent>
     {
         private readonly ISettingsManager _settingsManager;
-        private readonly IStoreService _storeService;
-        private readonly ICustomerOrderService _orderService;
-        private readonly IFulfillmentCenterService _fulfillmentCenterService;
-        private readonly IShippingMethodsSearchService _shippingMethodsSearchService;
+        private readonly ICrudService<Store> _storeService;
+        private readonly ICrudService<CustomerOrder> _orderService;
+        private readonly ICrudService<FulfillmentCenter> _fulfillmentCenterService;
+        private readonly ISearchService<ShippingMethodsSearchCriteria, ShippingMethodsSearchResult, ShippingMethod> _shippingMethodsSearchService;
         private readonly IMelhorEnvioService _melhorEnvioService;
 
         /// <summary>
@@ -52,13 +54,13 @@ namespace vc_module_MelhorEnvio.Data.Handlers
         /// <param name="storeService">Implementation of store service.</param>
         /// <param name="settingsManager">Implementation of settings manager.</param>
         /// <param name="itemService">Implementation of item service</param>
-        public ShippmendOrderChangedEventHandler(IStoreService storeService, ISettingsManager settingsManager, ICustomerOrderService orderService, IFulfillmentCenterService fulfillmentCenterService, IShippingMethodsSearchService shippingMethodsSearchService, IMelhorEnvioService pMelhorEnvioService)
+        public ShippmendOrderChangedEventHandler(ICrudService<Store> storeService, ISettingsManager settingsManager, ICrudService<CustomerOrder> orderService, IFulfillmentCenterService fulfillmentCenterService, IShippingMethodsSearchService shippingMethodsSearchService, IMelhorEnvioService pMelhorEnvioService)
         {
             _settingsManager = settingsManager;
             _storeService = storeService;
             _orderService = orderService;
-            _fulfillmentCenterService = fulfillmentCenterService;
-            _shippingMethodsSearchService = shippingMethodsSearchService;
+            _fulfillmentCenterService = (ICrudService<FulfillmentCenter>)fulfillmentCenterService;
+            _shippingMethodsSearchService = (ISearchService<ShippingMethodsSearchCriteria, ShippingMethodsSearchResult, ShippingMethod>)shippingMethodsSearchService;
             _melhorEnvioService = pMelhorEnvioService;
         }
 
@@ -87,7 +89,7 @@ namespace vc_module_MelhorEnvio.Data.Handlers
             shippingMethodsSearchCriteria.StoreId = changedEntry.NewEntry.StoreId;
             shippingMethodsSearchCriteria.Codes = new[] { nameof(MelhorEnvioMethod) };
             shippingMethodsSearchCriteria.IsActive = true;
-            var ShipmentMethods = _shippingMethodsSearchService.SearchShippingMethodsAsync(shippingMethodsSearchCriteria).GetAwaiter().GetResult();
+            var ShipmentMethods = _shippingMethodsSearchService.SearchAsync(shippingMethodsSearchCriteria).GetAwaiter().GetResult();
             var ShipmentMethod = ShipmentMethods.Results.FirstOrDefault(s => s.TypeName == nameof(MelhorEnvioMethod));
             string ShipmentMethod_Id = ShipmentMethod?.Id;
 
@@ -144,7 +146,7 @@ namespace vc_module_MelhorEnvio.Data.Handlers
 
         public virtual async Task TryToProcessAsync(ActionJobArgument[] jobArguments)
         {
-            var ordersByIdDict = (await _orderService.GetByIdsAsync(jobArguments.Select(x => x.CustomerOrderId).Distinct().ToArray()))
+            var ordersByIdDict = (await _orderService.GetAsync(jobArguments.Select(x => x.CustomerOrderId).Distinct().ToList()))
                                 .ToDictionary(x => x.Id)
                                 .WithDefaultValue(null);
 
@@ -218,7 +220,7 @@ namespace vc_module_MelhorEnvio.Data.Handlers
                     Items.Select(i => i.FulfillmentLocationCode).Where(s => s != null).Distinct().ToList(),
                     store.MainFulfillmentCenterId);
 
-                var fulfillmentCenters = _fulfillmentCenterService.GetByIdsAsync(FulfillmentCenterIds).GetAwaiter().GetResult();
+                var fulfillmentCenters = _fulfillmentCenterService.GetAsync(FulfillmentCenterIds).GetAwaiter().GetResult();
 
                 var shipmentSelect = melhorEnvioMethod.Calculate(store, pCustomerOrder.Shipments.FirstOrDefault().DeliveryAddress.PostalCode, pCustomerOrder.Items, fulfillmentCenters.FirstOrDefault()).FirstOrDefault(q => q.Id == MelhorEnvioMethod.DecodeOptionName(shipment.ShipmentMethodOption).ServiceID);
                 if (shipmentSelect == null)

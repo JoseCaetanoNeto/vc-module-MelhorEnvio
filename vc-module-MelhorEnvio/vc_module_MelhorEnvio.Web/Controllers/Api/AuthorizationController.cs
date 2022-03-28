@@ -1,16 +1,17 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using vc_module_MelhorEnvio.Core;
+using VirtoCommerce.Platform.Core.GenericCrud;
 using VirtoCommerce.Platform.Core.Settings;
+using VirtoCommerce.ShippingModule.Core.Model;
 using VirtoCommerce.ShippingModule.Core.Model.Search;
 using VirtoCommerce.ShippingModule.Core.Services;
+using VirtoCommerce.StoreModule.Core.Model;
 using static vc_module_MelhorEnvio.Core.ModuleConstants;
-using VirtoCommerce.StoreModule.Core.Services;
-using Microsoft.AspNetCore.Http;
-using System.Text;
 
 namespace vc_module_MelhorEnvio.Web.Controllers.Api
 {
@@ -22,13 +23,13 @@ namespace vc_module_MelhorEnvio.Web.Controllers.Api
         private const string _scope = "purchases-read orders-read products-read cart-read cart-write shipping-calculate shipping-cancel shipping-checkout shipping-companies shipping-generate shipping-preview shipping-print shipping-share shipping-tracking ecommerce-shipping transactions-read";
 
         private readonly ISettingsManager _settingsManager;
-        private readonly IShippingMethodsSearchService _ShippingMethodsSearchService;
-        private readonly IStoreService _storeService;
+        private readonly ISearchService<ShippingMethodsSearchCriteria, ShippingMethodsSearchResult, ShippingMethod> _ShippingMethodsSearchService;
+        private readonly ICrudService<Store> _storeService;
 
-        public AuthorizationController(ISettingsManager settingsManager, IShippingMethodsSearchService pShippingMethodsService, IStoreService pStoreService)
+        public AuthorizationController(ISettingsManager settingsManager, IShippingMethodsSearchService pShippingMethodsService, ICrudService<Store> pStoreService)
         {
             _settingsManager = settingsManager;
-            _ShippingMethodsSearchService = pShippingMethodsService;
+            _ShippingMethodsSearchService = (ISearchService<ShippingMethodsSearchCriteria, ShippingMethodsSearchResult, ShippingMethod>)pShippingMethodsService;
             _storeService = pStoreService;
         }
 
@@ -39,7 +40,7 @@ namespace vc_module_MelhorEnvio.Web.Controllers.Api
             if (string.IsNullOrEmpty(store))
                 return BadRequest();
 
-            var _ShippingMethods = _ShippingMethodsSearchService.SearchShippingMethodsAsync(new ShippingMethodsSearchCriteria() { StoreId = store, Keyword = nameof(MelhorEnvioMethod) }).GetAwaiter().GetResult().Results.FirstOrDefault();
+            var _ShippingMethods = _ShippingMethodsSearchService.SearchAsync(new ShippingMethodsSearchCriteria() { StoreId = store, Keyword = nameof(MelhorEnvioMethod) }).GetAwaiter().GetResult().Results.FirstOrDefault();
             if (_ShippingMethods == null || string.IsNullOrEmpty(_ShippingMethods.Id))
                 return BadRequest();
 
@@ -71,7 +72,7 @@ namespace vc_module_MelhorEnvio.Web.Controllers.Api
                 string store = splitArray[1];
                 string objectType = nameof(MelhorEnvioMethod);
 
-                var _ShippingMethods = _ShippingMethodsSearchService.SearchShippingMethodsAsync(new ShippingMethodsSearchCriteria() { StoreId = store, Codes = new[] { objectType }, IsActive = true , Keyword = objectType }).GetAwaiter().GetResult().Results.FirstOrDefault();
+                var _ShippingMethods = _ShippingMethodsSearchService.SearchAsync(new ShippingMethodsSearchCriteria() { StoreId = store, Codes = new[] { objectType }, IsActive = true, Keyword = objectType }).GetAwaiter().GetResult().Results.FirstOrDefault();
                 if (_ShippingMethods == null || string.IsNullOrEmpty(_ShippingMethods.Id))
                     return BadRequest();
 

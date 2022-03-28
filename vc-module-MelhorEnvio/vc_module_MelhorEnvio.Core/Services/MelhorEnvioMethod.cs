@@ -12,10 +12,10 @@ using VirtoCommerce.CustomerModule.Core.Services;
 using VirtoCommerce.InventoryModule.Core.Model;
 using VirtoCommerce.InventoryModule.Core.Services;
 using VirtoCommerce.Platform.Core.Caching;
+using VirtoCommerce.Platform.Core.GenericCrud;
 using VirtoCommerce.Platform.Core.Settings;
 using VirtoCommerce.ShippingModule.Core.Model;
 using VirtoCommerce.StoreModule.Core.Model;
-using VirtoCommerce.StoreModule.Core.Services;
 using OrderModel = VirtoCommerce.OrdersModule.Core.Model;
 
 namespace vc_module_MelhorEnvio.Core
@@ -131,19 +131,19 @@ namespace vc_module_MelhorEnvio.Core
             }
         }
 
-        public MelhorEnvioMethod(ISettingsManager pSettingsManager, IStoreService pStoreService, IFulfillmentCenterService pFulfillmentCenterService, IMemberResolver pMemberResolver, IConversorStandardAddress pStandardAddress, IPlatformMemoryCache pPlatformMemoryCache) : base(nameof(MelhorEnvioMethod))
+        public MelhorEnvioMethod(ISettingsManager pSettingsManager, ICrudService<Store> pStoreService, IFulfillmentCenterService pFulfillmentCenterService, IMemberResolver pMemberResolver, IConversorStandardAddress pStandardAddress, IPlatformMemoryCache pPlatformMemoryCache) : base(nameof(MelhorEnvioMethod))
         {
             _settingsManager = pSettingsManager;
             _storeService = pStoreService;
-            _fulfillmentCenterService = pFulfillmentCenterService;
+            _fulfillmentCenterService = (ICrudService<FulfillmentCenter>)pFulfillmentCenterService;
             _memberResolver = pMemberResolver;
             _StandardAddress = pStandardAddress;
             _platformMemoryCache = pPlatformMemoryCache;
         }
 
         private readonly ISettingsManager _settingsManager;
-        private readonly IStoreService _storeService;
-        private readonly IFulfillmentCenterService _fulfillmentCenterService;
+        private readonly ICrudService<Store> _storeService;
+        private readonly ICrudService<FulfillmentCenter> _fulfillmentCenterService;
         private readonly IMemberResolver _memberResolver;
         private readonly IConversorStandardAddress _StandardAddress;
         private readonly IPlatformMemoryCache _platformMemoryCache;
@@ -167,7 +167,7 @@ namespace vc_module_MelhorEnvio.Core
                 shippingContext.ShoppingCart.Items.Select(i => i.FulfillmentLocationCode).Where(s => s != null).Distinct().ToList(),
                 store.MainFulfillmentCenterId);
 
-            var fulfillmentCenters = _fulfillmentCenterService.GetByIdsAsync(FulfillmentCenterIds).Result;
+            var fulfillmentCenters = _fulfillmentCenterService.GetAsync(FulfillmentCenterIds).Result;
 
             foreach (var fulfillmentCenter in fulfillmentCenters)
             {

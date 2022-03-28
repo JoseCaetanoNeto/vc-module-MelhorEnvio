@@ -2,26 +2,28 @@
 using System.Linq;
 using vc_module_MelhorEnvio.Core.Model;
 using VirtoCommerce.CustomerModule.Core.Services;
+using VirtoCommerce.InventoryModule.Core.Model;
 using VirtoCommerce.InventoryModule.Core.Services;
 using VirtoCommerce.OrdersModule.Core.Model;
+using VirtoCommerce.Platform.Core.GenericCrud;
 using VirtoCommerce.Platform.Core.Settings;
-using VirtoCommerce.StoreModule.Core.Services;
+using VirtoCommerce.StoreModule.Core.Model;
 
 namespace vc_module_MelhorEnvio.Core
 {
     public class MelhorEnvioService : IMelhorEnvioService
     {
-        public MelhorEnvioService(ISettingsManager pSettingsManager, IStoreService pStoreService, IFulfillmentCenterService pFulfillmentCenterService, IMemberResolver pMemberResolver)
+        public MelhorEnvioService(ISettingsManager pSettingsManager, ICrudService<Store> pStoreService, IFulfillmentCenterService pFulfillmentCenterService, IMemberResolver pMemberResolver)
         {
             _settingsManager = pSettingsManager;
             _storeService = pStoreService;
-            _fulfillmentCenterService = pFulfillmentCenterService;
+            _fulfillmentCenterService = (ICrudService<FulfillmentCenter>)pFulfillmentCenterService;
             _memberResolver = pMemberResolver;
         }
 
         private readonly ISettingsManager _settingsManager;
-        private readonly IStoreService _storeService;
-        private readonly IFulfillmentCenterService _fulfillmentCenterService;
+        private readonly ICrudService<Store> _storeService;
+        private readonly ICrudService<FulfillmentCenter> _fulfillmentCenterService;
         private readonly IMemberResolver _memberResolver;
 
         public bool SendMECart(CustomerOrder pCustomerOrder)
@@ -41,7 +43,7 @@ namespace vc_module_MelhorEnvio.Core
                     Items.Select(i => i.FulfillmentLocationCode).Where(s => s != null).Distinct().ToList(),
                     store.MainFulfillmentCenterId);
 
-                var fulfillmentCenters = _fulfillmentCenterService.GetByIdsAsync(FulfillmentCenterIds).GetAwaiter().GetResult();
+                var fulfillmentCenters = _fulfillmentCenterService.GetAsync(FulfillmentCenterIds).GetAwaiter().GetResult();
 
                 var KeysValues = melhorEnvioMethod.SendMECart(pCustomerOrder, shipment, store, fulfillmentCenters.FirstOrDefault());
                 foreach (var keyValue in KeysValues)

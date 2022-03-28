@@ -2,14 +2,14 @@ using FluentValidation;
 using System.Linq;
 using vc_module_MelhorEnvio.Core;
 using VirtoCommerce.OrdersModule.Core.Model;
-using VirtoCommerce.OrdersModule.Core.Services;
 using VirtoCommerce.PaymentModule.Core.Model;
+using VirtoCommerce.Platform.Core.GenericCrud;
 
 namespace vc_module_MelhorEnvio.Web.Validation
 {
     public class MelhorEnvioValidator : AbstractValidator<Shipment>
     {
-        public MelhorEnvioValidator(ICustomerOrderService pOrderService)
+        public MelhorEnvioValidator(ICrudService<CustomerOrder> pOrderService)
         {
             RuleFor(shipment => shipment).Custom((newShipmentRequest, context) =>
             {

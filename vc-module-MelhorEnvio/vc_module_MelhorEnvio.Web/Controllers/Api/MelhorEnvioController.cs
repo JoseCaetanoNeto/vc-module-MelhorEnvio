@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using vc_module_MelhorEnvio.Core;
-using VirtoCommerce.OrdersModule.Core.Services;
+using VirtoCommerce.OrdersModule.Core.Model;
+using VirtoCommerce.Platform.Core.GenericCrud;
 
 namespace vc_module_MelhorEnvio.Web.Controllers.Api
 {
@@ -10,9 +11,9 @@ namespace vc_module_MelhorEnvio.Web.Controllers.Api
     public class MelhorEnvioController : Controller
     {
         private readonly IMelhorEnvioService _melhorEnvioService;
-        private readonly ICustomerOrderService _orderService;
+        private readonly ICrudService<CustomerOrder> _orderService;
 
-        public MelhorEnvioController(ICustomerOrderService pCustomerOrderService, IMelhorEnvioService pMelhorEnvioService)
+        public MelhorEnvioController(ICrudService<CustomerOrder> pCustomerOrderService, IMelhorEnvioService pMelhorEnvioService)
         {
             _melhorEnvioService = pMelhorEnvioService;
             _orderService = pCustomerOrderService;

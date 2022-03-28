@@ -6,13 +6,11 @@ using System.Threading.Tasks;
 using vc_module_MelhorEnvio.Core;
 using vc_module_MelhorEnvio.Core.Model;
 using vc_module_MelhorEnvio.Data.Repositories;
-using VirtoCommerce.OrdersModule.Core.Services;
 using VirtoCommerce.OrdersModule.Data.Repositories;
 using VirtoCommerce.Platform.Core.Common;
 using VirtoCommerce.Platform.Core.Settings;
 using VirtoCommerce.ShippingModule.Core.Model.Search;
 using VirtoCommerce.ShippingModule.Core.Services;
-using VirtoCommerce.StoreModule.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using VirtoCommerce.OrdersModule.Core.Model;
@@ -21,11 +19,11 @@ using VirtoCommerce.StoreModule.Core.Model;
 using VirtoCommerce.OrdersModule.Core.Notifications;
 using VirtoCommerce.CustomerModule.Core.Model;
 using VirtoCommerce.CustomerModule.Core.Services;
-using VirtoCommerce.Platform.Core.Security;
-using Microsoft.AspNetCore.Identity;
 using VirtoCommerce.NotificationsModule.Core.Extensions;
 using VirtoCommerce.NotificationsModule.Core.Model;
 using vc_module_MelhorEnvio.Core.Notifications;
+using VirtoCommerce.Platform.Core.GenericCrud;
+using VirtoCommerce.ShippingModule.Core.Model;
 
 namespace vc_module_MelhorEnvio.Data.BackgroundJobs
 {
@@ -47,22 +45,22 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
 
         private readonly ILogger _log;
         private readonly Func<IOrderRepository> _repositoryFactory;
-        private readonly IShippingMethodsSearchService _shippingMethodsSearchService;
-        private readonly ICustomerOrderService _customerOrderService;
-        private readonly IStoreService _storeService;
+        private readonly ISearchService<ShippingMethodsSearchCriteria, ShippingMethodsSearchResult, ShippingMethod> _shippingMethodsSearchService;
+        private readonly ICrudService<CustomerOrder> _customerOrderService;
+        private readonly ICrudService<Store> _storeService;
         private readonly ISettingsManager _settingsManager;
         private readonly INotificationSearchService _notificationSearchService;
         private readonly INotificationSender _notificationSender;
         private readonly IMemberResolver _memberResolver;
 
-        public TrackingJob(ISettingsManager settingsManager, IStoreService storeService, ICustomerOrderService customerOrderService, ILogger<TrackingJob> log, Func<IOrderRepository> repositoryFactory, IShippingMethodsSearchService shippingMethodsSearchService, INotificationSearchService notificationSearchService, INotificationSender notificationSender, IMemberResolver pMemberResolver)
+        public TrackingJob(ISettingsManager settingsManager, ICrudService<Store> storeService, ICrudService<CustomerOrder> customerOrderService, ILogger<TrackingJob> log, Func<IOrderRepository> repositoryFactory, IShippingMethodsSearchService shippingMethodsSearchService, INotificationSearchService notificationSearchService, INotificationSender notificationSender, IMemberResolver pMemberResolver)
         {
             _settingsManager = settingsManager;
             _storeService = storeService;
             _customerOrderService = customerOrderService;
             _log = log;
             _repositoryFactory = repositoryFactory;
-            _shippingMethodsSearchService = shippingMethodsSearchService;
+            _shippingMethodsSearchService = (ISearchService<ShippingMethodsSearchCriteria, ShippingMethodsSearchResult, ShippingMethod>)shippingMethodsSearchService;
             _notificationSearchService = notificationSearchService;
             _notificationSender = notificationSender;
             _memberResolver = pMemberResolver;
@@ -76,7 +74,7 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
             var shippingMethodsSearchCriteria = AbstractTypeFactory<ShippingMethodsSearchCriteria>.TryCreateInstance();
             shippingMethodsSearchCriteria.Codes = new[] { nameof(MelhorEnvioMethod) };
             shippingMethodsSearchCriteria.IsActive = true;
-            var authorizePaymentMethods = await _shippingMethodsSearchService.SearchShippingMethodsAsync(shippingMethodsSearchCriteria);
+            var authorizePaymentMethods = await _shippingMethodsSearchService.SearchAsync(shippingMethodsSearchCriteria);
 
             // está trazendo itens inativos, mesmo indicando no filtro que é só ativo
             var activePaymentMethods = authorizePaymentMethods.Results.Where(p => p.IsActive).ToList();
@@ -108,8 +106,8 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
                     if (queryPackages.Length > 0)
                     {
                         var store = await _storeService.GetByIdAsync(activePaymentMethod.StoreId);
-                        var arryCustomerOrdes = queryPackages.Select(p => p.CustomerOrderId).ToArray();
-                        var CustomerOrdes = await _customerOrderService.GetByIdsAsync(arryCustomerOrdes);
+                        var arryCustomerOrdes = queryPackages.Select(p => p.CustomerOrderId).ToList();
+                        var CustomerOrdes = await _customerOrderService.GetAsync(arryCustomerOrdes);
                         var shippingMethod = CustomerOrdes.FirstOrDefault().Shipments.FirstOrDefault(s => s.ShipmentMethodCode == nameof(MelhorEnvioMethod)).ShippingMethod as MelhorEnvioMethod;
 
                         var ME_Orders = queryPackages.Select(p => p.OuterId).Where(i => !string.IsNullOrEmpty(i)).ToList();
@@ -223,7 +221,7 @@ namespace vc_module_MelhorEnvio.Data.BackgroundJobs
 
         public virtual async Task TryToSendOrderNotificationsAsync(OrderNotificationJobArgument[] jobArguments)
         {
-            var ordersByIdDict = (await _customerOrderService.GetByIdsAsync(jobArguments.Select(x => x.CustomerOrderId).Distinct().ToArray()))
+            var ordersByIdDict = (await _customerOrderService.GetAsync(jobArguments.Select(x => x.CustomerOrderId).Distinct().ToList()))
                                 .ToDictionary(x => x.Id)
                                 .WithDefaultValue(null);
 
