@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <module>
     <id>vc_module_MelhorEnvio</id>
-    <version>1.0.200</version>
+    <version>1.0.201</version>
     <version-tag></version-tag>
     <platformVersion>3.200.0</platformVersion>
     <dependencies>
       <dependency id="VirtoCommerce.Core" version="3.200.0" />
       <dependency id="VirtoCommerce.Customer" version="3.200.0" />
-      <dependency id="VirtoCommerce.Orders" version="3.200.0" />
+      <dependency id="VirtoCommerce.Orders" version="3.204.1" />
       <dependency id="VirtoCommerce.Shipping" version="3.200.0" />
       <dependency id="VirtoCommerce.Cart" version="3.200.0" />
       <dependency id="VirtoCommerce.Inventory" version="3.200.0" />

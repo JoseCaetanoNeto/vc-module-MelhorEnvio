@@ -36,7 +36,7 @@ namespace vc_module_MelhorEnvio.Core.Services
                     Neighborhood = resultHere?.Address.County ?? resultHere?.Address.District,
                     City = resultHere?.Address.City,
                     State = resultHere?.Address.State,
-                    Country = pAddress.CountryName,
+                    Country = pAddress.CountryCode,
                     ZipCode = resultHere?.Address.PostalCode,
                     HouseNumberFallback = resultHere?.HouseNumberFallback ?? false,
                 };

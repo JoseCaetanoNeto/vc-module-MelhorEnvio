@@ -9,7 +9,18 @@ namespace vc_module_MelhorEnvio.Core.Services
     {
         public Task<AddressStandardModel> GetStandardAsync(Address address)
         {
-            return null;
+            return Task.FromResult(new AddressStandardModel()
+            {
+                Street = address.Street,
+                Number = address.Number,
+                Complement = address.Line2,
+                Neighborhood = address.District,
+                City = address.City,
+                State = address.RegionId,
+                Country = address.CountryCode,
+                ZipCode = address.PostalCode,
+                HouseNumberFallback = false,
+            });
         }
     }
 }

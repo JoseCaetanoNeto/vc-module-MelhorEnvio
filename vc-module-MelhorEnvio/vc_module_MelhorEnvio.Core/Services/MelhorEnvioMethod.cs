@@ -206,8 +206,8 @@ namespace vc_module_MelhorEnvio.Core
 
             var customer = _memberResolver.ResolveMemberByIdAsync(customerId).GetAwaiter().GetResult() as Contact;
             var Service = DecodeOptionName(pShipment.ShipmentMethodOption);
-            var stdAddressFulfillmentCenter = _StandardAddress.GetStandardAsync(pFulfillmentCenter.Address).GetAwaiter().GetResult();
-            var stdDeliveryAddress = _StandardAddress.GetStandardAsync(pShipment.DeliveryAddress).GetAwaiter().GetResult();
+            var stdAddressFulfillmentCenter = GetStandardAddress(pFulfillmentCenter.Address);
+            var stdDeliveryAddress = GetStandardAddress(pShipment.DeliveryAddress);
             var cartIn = new Models.CartIn()
             {
                 Service = Service.ServiceID,
@@ -268,6 +268,27 @@ namespace vc_module_MelhorEnvio.Core
             {
                 return SendNotCorreios(pShipment, pStore, cartIn);
             }
+        }
+
+        private AddressStandardModel GetStandardAddress(VirtoCommerce.CoreModule.Core.Common.Address address)
+        {
+            if (!string.IsNullOrEmpty(address.Street))
+            {
+                return new AddressStandardModel()
+                {
+                    Street = address.Street,
+                    Number = address.Number,
+                    Complement = address.Line2,
+                    Neighborhood = address.District,
+                    City = address.City,
+                    State = address.RegionId,
+                    Country = address.CountryCode,
+                    ZipCode = address.PostalCode,
+                    HouseNumberFallback = false,
+                };
+            }
+
+            return _StandardAddress.GetStandardAsync(address).GetAwaiter().GetResult();
         }
 
         public Models.TrackingOut TrackingOrders(Store pStore, List<string> pOrders)
