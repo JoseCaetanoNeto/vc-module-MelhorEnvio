@@ -286,7 +286,7 @@ namespace vc_module_MelhorEnvio.Core.Models
             public object Reminder { get; set; }
 
             [JsonProperty("insurance_value")]
-            public int InsuranceValue { get; set; }
+            public double InsuranceValue { get; set; }
 
             [JsonProperty("weight")]
             public object Weight { get; set; }
@@ -307,7 +307,7 @@ namespace vc_module_MelhorEnvio.Core.Models
             public string Format { get; set; }
 
             [JsonProperty("billed_weight")]
-            public int BilledWeight { get; set; }
+            public decimal BilledWeight { get; set; }
 
             [JsonProperty("receipt")]
             public bool Receipt { get; set; }
@@ -586,7 +586,7 @@ namespace vc_module_MelhorEnvio.Core.Models
             public string Format { get; set; }
 
             [JsonProperty("billed_weight")]
-            public double BilledWeight { get; set; }
+            public decimal BilledWeight { get; set; }
 
             [JsonProperty("receipt")]
             public bool Receipt { get; set; }

@@ -104,7 +104,7 @@ namespace vc_module_MelhorEnvio.Core.Models
         public object Reminder { get; set; }
 
         [JsonProperty("insurance_value")]
-        public int InsuranceValue { get; set; }
+        public double InsuranceValue { get; set; }
 
         [JsonProperty("weight")]
         public object Weight { get; set; }
