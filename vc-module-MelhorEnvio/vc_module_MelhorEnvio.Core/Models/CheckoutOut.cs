@@ -28,7 +28,7 @@ namespace vc_module_MelhorEnvio.Core.Models
             public string Protocol { get; set; }
 
             [JsonProperty("value")]
-            public double Value { get; set; }
+            public decimal Value { get; set; }
 
             [JsonProperty("type")]
             public string Type { get; set; }
@@ -235,7 +235,7 @@ namespace vc_module_MelhorEnvio.Core.Models
             public int Quantity { get; set; }
 
             [JsonProperty("unitary_value")]
-            public int UnitaryValue { get; set; }
+            public decimal UnitaryValue { get; set; }
 
             [JsonProperty("weight")]
             public object Weight { get; set; }
@@ -262,16 +262,16 @@ namespace vc_module_MelhorEnvio.Core.Models
             public object ServiceCode { get; set; }
 
             [JsonProperty("quote")]
-            public double Quote { get; set; }
+            public decimal Quote { get; set; }
 
             [JsonProperty("price")]
-            public double Price { get; set; }
+            public decimal Price { get; set; }
 
             [JsonProperty("coupon")]
             public object Coupon { get; set; }
 
             [JsonProperty("discount")]
-            public double Discount { get; set; }
+            public decimal Discount { get; set; }
 
             [JsonProperty("delivery_min")]
             public int DeliveryMin { get; set; }
@@ -286,7 +286,7 @@ namespace vc_module_MelhorEnvio.Core.Models
             public object Reminder { get; set; }
 
             [JsonProperty("insurance_value")]
-            public double InsuranceValue { get; set; }
+            public decimal InsuranceValue { get; set; }
 
             [JsonProperty("weight")]
             public object Weight { get; set; }
@@ -409,10 +409,10 @@ namespace vc_module_MelhorEnvio.Core.Models
             public string Protocol { get; set; }
 
             [JsonProperty("total")]
-            public double Total { get; set; }
+            public decimal Total { get; set; }
 
             [JsonProperty("discount")]
-            public double Discount { get; set; }
+            public decimal Discount { get; set; }
 
             [JsonProperty("status")]
             public string Status { get; set; }
@@ -448,7 +448,7 @@ namespace vc_module_MelhorEnvio.Core.Models
             public string Id { get; set; }
 
             [JsonProperty("protocol")]
-            public int Protocol { get; set; }
+            public string Protocol { get; set; }
 
             [JsonProperty("firstname")]
             public string Firstname { get; set; }
@@ -496,7 +496,7 @@ namespace vc_module_MelhorEnvio.Core.Models
             public string Protocol { get; set; }
 
             [JsonProperty("total")]
-            public int Total { get; set; }
+            public decimal Total { get; set; }
 
             [JsonProperty("type")]
             public string Type { get; set; }
@@ -550,22 +550,22 @@ namespace vc_module_MelhorEnvio.Core.Models
             public string Tracking { get; set; }
 
             [JsonProperty("quote")]
-            public double Quote { get; set; }
+            public decimal Quote { get; set; }
 
             [JsonProperty("price")]
-            public double Price { get; set; }
+            public decimal Price { get; set; }
 
             [JsonProperty("discount")]
-            public double Discount { get; set; }
+            public decimal Discount { get; set; }
 
             [JsonProperty("value")]
-            public int Value { get; set; }
+            public decimal Value { get; set; }
 
             [JsonProperty("type")]
             public string Type { get; set; }
 
             [JsonProperty("insurance_value")]
-            public int InsuranceValue { get; set; }
+            public decimal InsuranceValue { get; set; }
 
             [JsonProperty("weight")]
             public object Weight { get; set; }
@@ -634,7 +634,7 @@ namespace vc_module_MelhorEnvio.Core.Models
             public string Protocol { get; set; }
 
             [JsonProperty("total")]
-            public int Total { get; set; }
+            public decimal Total { get; set; }
 
             [JsonProperty("type")]
             public string Type { get; set; }
