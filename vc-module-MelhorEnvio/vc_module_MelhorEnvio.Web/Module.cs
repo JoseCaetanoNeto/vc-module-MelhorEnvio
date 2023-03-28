@@ -59,15 +59,23 @@ namespace vc_module_MelhorEnvio.Web
             var snapshot = serviceCollection.BuildServiceProvider();
             var configuration = snapshot.GetService<IConfiguration>();
 
-            var hereKey = configuration?.GetSection("GeoData:Here")?["ApiKey"];
-            if (!string.IsNullOrEmpty(hereKey))
+            var hereCEPAberto = configuration?.GetSection("GeoData:CEPAberto")?["Token"];
+            if (!string.IsNullOrEmpty(hereCEPAberto))
             {
-                serviceCollection.AddHereServices(options => options.UseKey(hereKey));
-                serviceCollection.AddTransient<IConversorStandardAddress, HereConversorStandardAddress>();
+                serviceCollection.AddTransient<IConversorStandardAddress, BuscaCEPStandardAddress>();
             }
             else
             {
-                serviceCollection.AddTransient<IConversorStandardAddress, DummyConversorStandardAddress>();
+                var hereKey = configuration?.GetSection("GeoData:Here")?["ApiKey"];
+                if (!string.IsNullOrEmpty(hereKey))
+                {
+                    serviceCollection.AddHereServices(options => options.UseKey(hereKey));
+                    serviceCollection.AddTransient<IConversorStandardAddress, HereConversorStandardAddress>();
+                }
+                else
+                {
+                    serviceCollection.AddTransient<IConversorStandardAddress, DummyConversorStandardAddress>();
+                }
             }
 
             // TODO:
