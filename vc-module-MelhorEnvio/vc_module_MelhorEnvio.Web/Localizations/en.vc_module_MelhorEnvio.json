@@ -17,7 +17,8 @@
       "register": "Authenticate in MelhorEnvio",
       "insert_cart": "Insert Cart",
       "open_cart": "Open Cart",
-      "traking": "Track Item"
+      "traking": "Track Item",
+      "shipping_label": "Shipping Label"
     }
   },
   "shipping": {
@@ -36,6 +37,10 @@
   },
   "settings": {
     "vcmoduleMelhorEnvio": {
+      "Checkout": {
+        "title": "Checkou Automático (necessário saldo em crédito na conta do melhorenvio)",
+        "description": ""
+      },
       "sandbox": {
         "title": "sandbox",
         "description": ""

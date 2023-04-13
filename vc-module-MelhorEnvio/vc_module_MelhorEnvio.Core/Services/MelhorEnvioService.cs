@@ -1,30 +1,33 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using vc_module_MelhorEnvio.Core.Model;
 using VirtoCommerce.CustomerModule.Core.Services;
 using VirtoCommerce.InventoryModule.Core.Model;
 using VirtoCommerce.InventoryModule.Core.Services;
 using VirtoCommerce.OrdersModule.Core.Model;
+using VirtoCommerce.Platform.Core.DynamicProperties;
 using VirtoCommerce.Platform.Core.GenericCrud;
 using VirtoCommerce.Platform.Core.Settings;
 using VirtoCommerce.StoreModule.Core.Model;
+using static vc_module_MelhorEnvio.Core.ModuleConstants.Settings.MelhorEnvio;
 
 namespace vc_module_MelhorEnvio.Core
 {
     public class MelhorEnvioService : IMelhorEnvioService
     {
-        public MelhorEnvioService(ISettingsManager pSettingsManager, ICrudService<Store> pStoreService, IFulfillmentCenterService pFulfillmentCenterService, IMemberResolver pMemberResolver)
+        public MelhorEnvioService(ICrudService<Store> pStoreService, IFulfillmentCenterService pFulfillmentCenterService, IMemberResolver pMemberResolver, IDynamicPropertySearchService pDynamicPropertySearchService)
         {
-            _settingsManager = pSettingsManager;
             _storeService = pStoreService;
             _fulfillmentCenterService = (ICrudService<FulfillmentCenter>)pFulfillmentCenterService;
             _memberResolver = pMemberResolver;
+            _dynamicPropertySearchService = pDynamicPropertySearchService;
         }
 
-        private readonly ISettingsManager _settingsManager;
         private readonly ICrudService<Store> _storeService;
         private readonly ICrudService<FulfillmentCenter> _fulfillmentCenterService;
         private readonly IMemberResolver _memberResolver;
+        private readonly IDynamicPropertySearchService _dynamicPropertySearchService;
 
         public bool SendMECart(CustomerOrder pCustomerOrder)
         {
@@ -81,8 +84,22 @@ namespace vc_module_MelhorEnvio.Core
                             $"TELEFONE: {agency.phone.phone} {Environment.NewLine}{Environment.NewLine}";
                         }
                     }
-                }
+                    if (melhorEnvioMethod.Settings.GetSettingValue(Checkout.Name, (bool)Checkout.DefaultValue))
+                    {
+                        var resultCheckout = melhorEnvioMethod.CheckOut(package.OuterId, store);
+                        shipment.Comment += $"Efetuado pagamento: {resultCheckout.purchase.Protocol} - {resultCheckout.purchase.Status} {Environment.NewLine}";
 
+                        var resultGenerateList = melhorEnvioMethod.Generate(package.OuterId, store);
+                        var resultGenerate = resultGenerateList[package.OuterId];
+                        shipment.Comment += $"Etiqueta Gerada: {resultGenerate?.Status} - {resultGenerate?.Message} {Environment.NewLine}";
+
+                        var LinkEtiquea = melhorEnvioMethod.Print((PrintMode)1, package.OuterId, store);
+                        shipment.Comment += $"Link Etiqueta: {LinkEtiquea?.Url} {Environment.NewLine}";
+
+                        IList<DynamicProperty> dynamicProp = new List<DynamicProperty>();
+                        dynamicProp.SetDynamicProp(_dynamicPropertySearchService, shipment, ModuleConstants.K_linkEtiqueta, LinkEtiquea?.Url).GetAwaiter().GetResult();
+                    }
+                }
             }
             return true;
         }

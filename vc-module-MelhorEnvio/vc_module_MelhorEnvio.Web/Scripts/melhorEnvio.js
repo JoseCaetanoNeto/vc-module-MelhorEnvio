@@ -5,7 +5,7 @@ if (AppDependencies !== undefined) {
     AppDependencies.push(moduleName);
 }
 
-angular.module(moduleName, [])   
+angular.module(moduleName, [])
     .run(['platformWebApp.widgetService', 'platformWebApp.toolbarService', 'platformWebApp.authService', 'platformWebApp.dialogService','platformWebApp.bladeNavigationService',
         function (widgetService, toolbarService, authService, dialogService, bladeNavigationService) {
 
@@ -15,7 +15,7 @@ angular.module(moduleName, [])
                 executeMethod: function (blade) {
                     $.getJSON('api/melhorenvio/oauth/authorize/?store=' + blade.storeId, function (url) {
                         window.open(url[0], '_blank');
-                    });                    
+                    });
                 },
                 canExecuteMethod: function (blade) {
                     return blade.shippingMethod.code == "MelhorEnvioMethod";
@@ -87,7 +87,7 @@ angular.module(moduleName, [])
                     return false;
                 },
                 index: 98
-            };           
+            };
 
             var menuItemShipmment = {
                 name: "melhorenvio.commands.traking",
@@ -103,20 +103,50 @@ angular.module(moduleName, [])
                     if (blade.id != "operationDetail" || blade.currentEntity == undefined || blade.currentEntity.operationType != "Shipment") {
                         return false;
                     }
+                    const regex = /^(Send|Delivery)/;
                     if (blade.currentEntity.shippingMethod.code == "MelhorEnvioMethod") {
                         for (var i = 0; i < blade.currentEntity.packages.length; i++) {
-                            if (blade.currentEntity.packages[i].trackingCode != undefined) {
+                            if (blade.currentEntity.packages[i].trackingCode != undefined && (regex.test(blade.currentEntity.packages[i].packageState))) {
                                 return true;
                             };
                         }
                     }
                     return false;
                 },
-                index: 99
+                index: 91
+            };
+
+            var menuItemShowShippingLabel = {
+                name: "melhorenvio.commands.shipping_label",
+                icon: 'fa fa-barcode',
+                executeMethod: function (blade) {
+                    var filteredProperty = _.find(blade.currentEntity.dynamicProperties, function (o) { return o.name === "linkEtiqueta"; });
+                    window.open(filteredProperty.values[0].value, '_blank');
+                },
+                canExecuteMethod: function (blade) {
+                    if (blade.id != "operationDetail" || blade.currentEntity == undefined || blade.currentEntity.operationType != "Shipment") {
+                        return false;
+                    }
+                    if (blade.currentEntity.shippingMethod.code == "MelhorEnvioMethod") {
+                        const regex = /^(Send|Delivery)/;
+                        for (var i = 0; i < blade.currentEntity.packages.length; i++) {
+                            if (!regex.test(blade.currentEntity.packages[i].packageState)) {
+                                const regex = /^(http|https):\/\/[^ "]+$/;
+                                var filteredProperty = _.find(blade.currentEntity.dynamicProperties, function (o) { return o.name === "linkEtiqueta"; });
+                                if (filteredProperty && _.any(filteredProperty.values) && regex.test(filteredProperty.values[0].value)) {
+                                    return true;
+                                }
+                            };
+                        }
+                    }
+                    return false;
+                },
+                index: 90
             };
 
             toolbarService.register(menuItemStore, 'virtoCommerce.shippingModule.shippingMethodDetailController');
             toolbarService.register(menuItemShipmment, 'virtoCommerce.orderModule.operationDetailController');
+            toolbarService.register(menuItemShowShippingLabel, 'virtoCommerce.orderModule.operationDetailController');            
             toolbarService.register(menuItemOpenCart, 'virtoCommerce.orderModule.operationDetailController');
             toolbarService.register(menuItemInsertCart, 'virtoCommerce.orderModule.operationDetailController');
 

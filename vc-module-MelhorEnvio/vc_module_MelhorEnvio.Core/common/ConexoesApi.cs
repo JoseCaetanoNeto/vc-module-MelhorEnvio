@@ -128,4 +128,95 @@ namespace vc_module_MelhorEnvio.Core
             }
         }
     }
+
+
+
+    // codificalção parcial migrando para HttpClient, TODO: FALTA VALIDAR TRATAMENTO DE ERRO
+    public static class ConexoesApi2
+    {
+
+        /// <summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="pMethod">POST/GET</param>
+        /// <param name="pUrl"></param>
+        /// <param name="pObjetoEntrada"></param>
+        /// <param name="pAuthorization"></param>
+        /// <returns>Efetua chamada POST/GET para uma determinada API</returns>
+        /// </summary>
+        /// <param name="pUrl"></param><param name="pAuthorization"></param><param name="pMethod">POST/GET</param><param name="pObjetoEntrada"></param>
+        public static async Task<T> EfetuarChamadaApi2<T2, T>(string pUrl, string pAuthorization, string pMethod, string pAgent = null, object pObjetoEntrada = null, Func<string, string> pPreprocResult = null) where T2 : Models.ErrorOut, new() where T : Models.IErrorOut, new()
+        {
+            string objEntradaSerializado = string.Empty;
+            if (pObjetoEntrada != null)
+                objEntradaSerializado = JsonConvert.SerializeObject(pObjetoEntrada);
+
+            // Seta o certificado como válido em caso de utilizar SSL
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+            T objRetorno = default(T);
+            using (var client = new HttpClient())
+            {
+                using (var request = new HttpRequestMessage(pMethod == "GET" ? HttpMethod.Get : pMethod == "PUT" ? HttpMethod.Put : HttpMethod.Post, pUrl))
+                {
+
+                    request.Headers.Add("Accept", "application/json");
+                    request.Headers.Add("Content-type", "application/json");
+                    if (!string.IsNullOrEmpty(pAgent))
+                        request.Headers.Add("User-Agent", pAgent);
+                    if (!string.IsNullOrEmpty(pAuthorization))
+                        request.Headers.Add("Authorization", pAuthorization);
+
+                    var content = new StringContent(objEntradaSerializado);
+                    content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                    request.Content = content;
+
+                    var response = await client.SendAsync(request);
+                    try
+                    {
+                        response.EnsureSuccessStatusCode();
+
+                        string objRetornoSerializado = await response.Content.ReadAsStringAsync();
+
+                        if (pPreprocResult != null)
+                            objRetornoSerializado = pPreprocResult(objRetornoSerializado);
+
+                        objRetorno = JsonConvert.DeserializeObject<T>(objRetornoSerializado);
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        switch (ex.StatusCode)
+                        {
+                            case HttpStatusCode.GatewayTimeout:
+                            case HttpStatusCode.RequestTimeout:
+                                throw;
+                            case HttpStatusCode.Conflict:
+                            case HttpStatusCode.BadRequest:
+                            case HttpStatusCode.Unauthorized:
+                            case HttpStatusCode.PaymentRequired:
+                            case HttpStatusCode.Forbidden:
+                            case HttpStatusCode.NotFound:
+                            case HttpStatusCode.InternalServerError:
+                            case HttpStatusCode.BadGateway:
+                            case HttpStatusCode.UnprocessableEntity:
+                                string error = response.ReasonPhrase;
+
+                                T2 typeError = JsonConvert.DeserializeObject<T2>(error);
+                                if (string.IsNullOrWhiteSpace(typeError.message))
+                                    typeError.message = typeError.error;
+
+                                // injeta no retornos json's atuais class faze status_code, para pegar o código do http code e propriedade de erro
+                                typeError.status_code = (int)response.StatusCode;
+
+                                // inserta classe de erro no objeto 
+                                if (objRetorno == null)
+                                    objRetorno = new T();
+                                objRetorno.errorOut = typeError;
+                                return objRetorno;
+                        }
+                    }
+                }
+                return objRetorno;
+            }
+        }
+    }
 }

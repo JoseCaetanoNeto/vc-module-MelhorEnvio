@@ -16,7 +16,9 @@ namespace vc_module_MelhorEnvio.Core
         public const int K_Company_AZULEXPRES = 9;
 
         public const string K_InvoiceKey = "InvoiceKey";
+        public const string K_linkEtiqueta = "linkEtiqueta";
 
+        
         public static class Security
         {
             public static class Permissions
@@ -144,6 +146,14 @@ namespace vc_module_MelhorEnvio.Core
                     // curl -k --location -g --request GET 'https://www.melhorenvio.com.br/api/v2/me/shipment/agencies?company=2&country=BR&state=PB&city=Campina Grande' | json_pp | more
                 };
 
+                public static readonly SettingDescriptor Checkout = new SettingDescriptor
+                {
+                    Name = "vcmoduleMelhorEnvio.Checkout",
+                    GroupName = "vcmoduleMelhorEnvio|MelhorEnvio by store",
+                    ValueType = SettingValueType.Boolean,
+                    DefaultValue = false
+                };
+
                 public static IEnumerable<SettingDescriptor> Settings
                 {
                     get
@@ -160,7 +170,8 @@ namespace vc_module_MelhorEnvio.Core
                             SendDataOnShippingStatus,
                             Sandbox,
                             AgencyJadLog,
-                            AgencyAzul
+                            AgencyAzul,
+                            Checkout
                         };
                     }
                 }

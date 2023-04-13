@@ -314,6 +314,27 @@ namespace vc_module_MelhorEnvio.Core
             return mes.GetAgencyInfo(pAgencyId);
         }
 
+        public Models.CheckoutOut CheckOut(string pOrder, Store pStore)
+        {
+            MelhorEnvioApi mes = new MelhorEnvioApi(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
+            mes.onSaveNewToken = SaveToken;
+            return mes.Checkout(new List<string>() { pOrder });
+        }
+
+        public Models.GenerateOut Generate(string pOrder, Store pStore)
+        {
+            MelhorEnvioApi mes = new MelhorEnvioApi(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
+            mes.onSaveNewToken = SaveToken;
+            return mes.Generate(new List<string>() { pOrder });
+        }
+
+        public Models.PrintOut Print(PrintMode Modes, string pOrder,  Store pStore)
+        {
+            MelhorEnvioApi mes = new MelhorEnvioApi(Client_id, Client_secret, Sandbox, pStore.Name, pStore.AdminEmail, Token());
+            mes.onSaveNewToken = SaveToken;
+            return mes.Print(Modes, new List<string>() { pOrder });
+        }
+
         public List<string> getFulfillmentCenters(List<string> ShipmentsWarehouseLocation, List<string> ItemsFulfillmentLocationCode, string MainFulfillmentCenterId)
         {
             var FulfillmentCenterIds = ShipmentsWarehouseLocation;

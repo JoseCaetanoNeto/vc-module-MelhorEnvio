@@ -1,3 +1,4 @@
+using Hangfire;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,9 +30,7 @@ namespace vc_module_MelhorEnvio.Data.Handlers
     public class ActionJobArgument
     {
         public string CustomerOrderId { get; set; }
-        public GenericChangedEntry<CustomerOrder> changedEntry { get; set; }
         public string TypeName { get; set; }
-        public Func<CustomerOrder, bool> RunAction { get; set; }
     }
 
 
@@ -72,7 +71,8 @@ namespace vc_module_MelhorEnvio.Data.Handlers
 
                 if (jobArguments.Any())
                 {
-                    return TryToProcessAsync(jobArguments);
+                    BackgroundJob.Enqueue(() => TryToProcessAsync(jobArguments));
+                    //return TryToProcessAsync(jobArguments);
                 }
             }
             return Task.CompletedTask;
@@ -95,17 +95,17 @@ namespace vc_module_MelhorEnvio.Data.Handlers
 
             if (IsShippingRecalc(changedEntry))
             {
-                result.Add(new ActionJobArgument() { RunAction = UpdatePackages, changedEntry = changedEntry, TypeName = "OrderChanged", CustomerOrderId = changedEntry.NewEntry.Id });
+                result.Add(new ActionJobArgument() { TypeName = "OrderChanged", CustomerOrderId = changedEntry.NewEntry.Id });
             }
-            
+
             if (IsOrderPaid(changedEntry))
             {
-                result.Add(new ActionJobArgument() { changedEntry = changedEntry, TypeName = "OrderPaid", CustomerOrderId = changedEntry.NewEntry.Id });
+                result.Add(new ActionJobArgument() { TypeName = "OrderPaid", CustomerOrderId = changedEntry.NewEntry.Id });
             }
 
             if (IsSendDataShippingStatus(changedEntry, ShipmentMethod_Id))
             {
-                result.Add(new ActionJobArgument() { RunAction = _melhorEnvioService.SendMECart, changedEntry = changedEntry, TypeName = "SendPackages", CustomerOrderId = changedEntry.NewEntry.Id });
+                result.Add(new ActionJobArgument() { TypeName = "SendPackages", CustomerOrderId = changedEntry.NewEntry.Id });
             }
 
             return result.ToArray();
@@ -151,20 +151,30 @@ namespace vc_module_MelhorEnvio.Data.Handlers
                                 .WithDefaultValue(null);
 
             var changedOrders = new List<CustomerOrder>();
-
+            bool inserir = false;
             foreach (var jobArgument in jobArguments)
             {
-                if (jobArgument.RunAction != null)
+                var order = ordersByIdDict[jobArgument.CustomerOrderId];
+                if (order != null)
                 {
-                    var order = ordersByIdDict[jobArgument.CustomerOrderId];
-                    if (order != null)
+                    if (jobArgument.TypeName == "OrderChanged")
                     {
-                        if (jobArgument.RunAction(order))
+                        inserir = UpdatePackages(order);
+                    }
+                    else if (jobArgument.TypeName == "OrderPaid")
+                    {
+                        inserir = false;
+                    }
+                    else if (jobArgument.TypeName == "SendPackages")
+                    {
+                        inserir = _melhorEnvioService.SendMECart(order);
+                    }
+
+                    if (inserir)
+                    {
+                        if (!changedOrders.Contains(order))
                         {
-                            if (!changedOrders.Contains(order))
-                            {
-                                changedOrders.Add(order);
-                            }
+                            changedOrders.Add(order);
                         }
                     }
                 }
@@ -258,6 +268,6 @@ namespace vc_module_MelhorEnvio.Data.Handlers
             }
             return true;
         }
-        
+
     }
 }
