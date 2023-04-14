@@ -1,4 +1,6 @@
+using Newtonsoft.Json;
 using vc_module_MelhorEnvio.Core;
+using vc_module_MelhorEnvio.Core.Models;
 using Xunit;
 
 namespace vc_module_MelhorEnvio.Tests
@@ -9,6 +11,19 @@ namespace vc_module_MelhorEnvio.Tests
         {
         }
 
+        [Fact]
+        public void Run_Json()
+        {
+            string jconStr = "{\r\n\t\"generate_key\":\"71a08ace-d803-49ac-bfc8-b2e03b236307\",\r\n\t\"5cd1f25c-2865-41b7-b677-012c3359c6c6\":{\"message\":\"Envio encaminhado para gera\\u00e7\\u00e3o\",\"status\":true},\r\n\t\"5cd1f25c-2865-41b7-b677-012c3359c6c7\":{\"message\":\"Envio encaminhado para gera\\u00e7\\u00e3o\",\"status\":true},\r\n\t\"5cd1f25c-2865-41b7-b677-012c3359c6c8\":{\"message\":\"Envio encaminhado para gera\\u00e7\\u00e3o\",\"status\":true}\r\n}";
+            dynamic objRetorno = JsonConvert.DeserializeObject(jconStr);
+            if (objRetorno.generate_key != null)
+                objRetorno.generate_key = null;
+
+            var jconStr2 = JsonConvert.SerializeObject(objRetorno);
+            var objst = JsonConvert.DeserializeObject<GenerateOut>(jconStr2);
+
+            //Assert.Equal(jconStr2, jconStr);
+        }
         [Fact]
         public void Run_Tracking()
         {

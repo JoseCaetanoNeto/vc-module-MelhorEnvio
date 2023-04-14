@@ -54,6 +54,19 @@ namespace vc_module_MelhorEnvio.Core
             return pJson;
         }
 
+        private string normalizeGenerateRetData(string pJson)
+        {
+            dynamic objRetorno = JsonConvert.DeserializeObject(pJson);
+            if (objRetorno.generate_key != null)
+            {
+                objRetorno.generate_key = null; // remove conteúdo da propriedade generate_key, pois desereliazação tenta converter para dictionary e dar erro
+
+                pJson = JsonConvert.SerializeObject(objRetorno);
+            }
+
+            return pJson;
+        }
+
         public Models.CartOut InserirCart(Models.CartIn pCart)
         {
             if (string.IsNullOrEmpty(m_Access))
@@ -128,9 +141,9 @@ namespace vc_module_MelhorEnvio.Core
 
             if (string.IsNullOrEmpty(m_Access))
                 return default(Models.GenerateOut);
-            var transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.GenerateOut>(BuildUrl(C_generate), GetAut(), "POST", buildAgent(), orders);
+            var transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.GenerateOut>(BuildUrl(C_generate), GetAut(), "POST", buildAgent(), orders, normalizeGenerateRetData);
             if (isInvalidToken(transation.errorOut))
-                transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.GenerateOut>(BuildUrl(C_generate), GetAut(), "POST", buildAgent(), orders);
+                transation = ConexoesApi.EfetuarChamadaApi<Models.ErrorOut, Models.GenerateOut>(BuildUrl(C_generate), GetAut(), "POST", buildAgent(), orders, normalizeGenerateRetData);
             return transation;
         }
 
