@@ -25,7 +25,6 @@ using VirtoCommerce.OrdersModule.Core.Model;
 using VirtoCommerce.OrdersModule.Data.Model;
 using VirtoCommerce.OrdersModule.Data.Repositories;
 using VirtoCommerce.Platform.Core.Bus;
-using VirtoCommerce.Platform.Core.Caching;
 using VirtoCommerce.Platform.Core.Common;
 using VirtoCommerce.Platform.Core.GenericCrud;
 using VirtoCommerce.Platform.Core.Modularity;
@@ -34,6 +33,7 @@ using VirtoCommerce.Platform.Hangfire;
 using VirtoCommerce.Platform.Hangfire.Extensions;
 using VirtoCommerce.ShippingModule.Core.Services;
 using VirtoCommerce.StoreModule.Core.Model;
+using VirtoCommerce.Platform.Core.DynamicProperties;
 
 namespace vc_module_MelhorEnvio.Web
 {
@@ -55,7 +55,7 @@ namespace vc_module_MelhorEnvio.Web
             serviceCollection.AddTransient<ShippmendCancelOrderEventHandler>();
             serviceCollection.AddTransient<IValidator<Shipment>, MelhorEnvioValidator>();
             serviceCollection.AddTransient<IMelhorEnvioService, MelhorEnvioService>();
-
+            
             var snapshot = serviceCollection.BuildServiceProvider();
             var configuration = snapshot.GetService<IConfiguration>();
 
@@ -99,6 +99,7 @@ namespace vc_module_MelhorEnvio.Web
             var recurringJobManager = appBuilder.ApplicationServices.GetService<IRecurringJobManager>();
             var memberResolver = appBuilder.ApplicationServices.GetRequiredService<IMemberResolver>();
 
+
             recurringJobManager.WatchJobSetting(
                 settingsManager,
                 new SettingCronJobBuilder()
@@ -112,11 +113,11 @@ namespace vc_module_MelhorEnvio.Web
 
             // register ShippingMethod
             var shippingMethodsRegistrar = appBuilder.ApplicationServices.GetRequiredService<IShippingMethodsRegistrar>();
-            var standardAddress = appBuilder.ApplicationServices.GetRequiredService<IConversorStandardAddress>();
-            var platformMemoryCache = appBuilder.ApplicationServices.GetRequiredService<IPlatformMemoryCache>();
+            var melhorEnvioService = appBuilder.ApplicationServices.GetRequiredService<IMelhorEnvioService>();
+            var dynamicPropertySearchService = appBuilder.ApplicationServices.GetRequiredService<IDynamicPropertySearchService>(); 
 
 
-            shippingMethodsRegistrar.RegisterShippingMethod(() => new MelhorEnvioMethod(settingsManager, appBuilder.ApplicationServices.GetRequiredService<ICrudService<Store>>(), appBuilder.ApplicationServices.GetRequiredService<IFulfillmentCenterService>(), memberResolver, standardAddress, platformMemoryCache));
+            shippingMethodsRegistrar.RegisterShippingMethod(() => new MelhorEnvioMethod(melhorEnvioService, settingsManager, appBuilder.ApplicationServices.GetRequiredService<ICrudService<Store>>(), appBuilder.ApplicationServices.GetRequiredService<IFulfillmentCenterService>(), dynamicPropertySearchService));
 
             var inProcessBus = appBuilder.ApplicationServices.GetService<IHandlerRegistrar>();
             inProcessBus.RegisterHandler<OrderChangedEvent>((message, token) => appBuilder.ApplicationServices.GetService<ShippmendOrderChangedEventHandler>().Handle(message));

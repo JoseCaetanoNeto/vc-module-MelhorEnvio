@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using vc_module_MelhorEnvio.Core;
-using vc_module_MelhorEnvio.Core.Model;
 using VirtoCommerce.InventoryModule.Core.Model;
 using VirtoCommerce.InventoryModule.Core.Services;
 using VirtoCommerce.OrdersModule.Core.Events;
@@ -69,11 +68,18 @@ namespace vc_module_MelhorEnvio.Data.Handlers
             {
                 var jobArguments = message.ChangedEntries.SelectMany(GetJobArgumentsForChangedEntry).ToArray();
 
-                if (jobArguments.Any())
+                var jobArgumentsOCN = jobArguments.Where(j => j.TypeName != "OrderChanged").ToArray();
+
+                if (jobArgumentsOCN.Any())
                 {
-                    BackgroundJob.Enqueue(() => TryToProcessAsync(jobArguments));
-                    //return TryToProcessAsync(jobArguments);
+                    BackgroundJob.Enqueue(() => TryToProcessAsync(jobArgumentsOCN));
                 }
+
+                var jobArgumentsOC = jobArguments.Where(j => j.TypeName == "OrderChanged").ToArray();
+                if (jobArgumentsOC.Any())
+                {
+                    return TryToProcessAsync(jobArgumentsOC);
+                }               
             }
             return Task.CompletedTask;
         }
@@ -93,14 +99,9 @@ namespace vc_module_MelhorEnvio.Data.Handlers
             var ShipmentMethod = ShipmentMethods.Results.FirstOrDefault(s => s.TypeName == nameof(MelhorEnvioMethod));
             string ShipmentMethod_Id = ShipmentMethod?.Id;
 
-            if (IsShippingRecalc(changedEntry))
+            if (changedEntry.EntryState != EntryState.Deleted && IsShippingRecalc(changedEntry))
             {
                 result.Add(new ActionJobArgument() { TypeName = "OrderChanged", CustomerOrderId = changedEntry.NewEntry.Id });
-            }
-
-            if (IsOrderPaid(changedEntry))
-            {
-                result.Add(new ActionJobArgument() { TypeName = "OrderPaid", CustomerOrderId = changedEntry.NewEntry.Id });
             }
 
             if (IsSendDataShippingStatus(changedEntry, ShipmentMethod_Id))
@@ -159,7 +160,8 @@ namespace vc_module_MelhorEnvio.Data.Handlers
                 {
                     if (jobArgument.TypeName == "OrderChanged")
                     {
-                        inserir = UpdatePackages(order);
+                        var melhoEnvioSrv = order.Shipments.Where(s => s.ShipmentMethodCode == nameof(MelhorEnvioMethod)).FirstOrDefault().ShippingMethod as MelhorEnvioMethod;
+                        inserir = melhoEnvioSrv.UpdatePackages(order);
                     }
                     else if (jobArgument.TypeName == "OrderPaid")
                     {
@@ -167,7 +169,8 @@ namespace vc_module_MelhorEnvio.Data.Handlers
                     }
                     else if (jobArgument.TypeName == "SendPackages")
                     {
-                        inserir = _melhorEnvioService.SendMECart(order);
+                        var melhoEnvioSrv = order.Shipments.Where(s => s.ShipmentMethodCode == nameof(MelhorEnvioMethod)).FirstOrDefault().ShippingMethod as MelhorEnvioMethod;
+                        inserir = melhoEnvioSrv.SendMECart(order);
                     }
 
                     if (inserir)
@@ -216,58 +219,7 @@ namespace vc_module_MelhorEnvio.Data.Handlers
             return changedEntry.NewEntry.Shipments.FirstOrDefault()?.DeliveryAddress.PostalCode != changedEntry.OldEntry.Shipments.FirstOrDefault()?.DeliveryAddress.PostalCode;
         }
 
-        private bool UpdatePackages(CustomerOrder pCustomerOrder)
-        {
-            var shipments = pCustomerOrder.Shipments.Where(s => s.ShipmentMethodCode == nameof(MelhorEnvioMethod));
-            var store = _storeService.GetByIdAsync(pCustomerOrder.StoreId).GetAwaiter().GetResult();
-            var Items = pCustomerOrder.Items;
-            foreach (var shipment in shipments)
-            {
-                MelhorEnvioMethod melhorEnvioMethod = shipment.ShippingMethod as MelhorEnvioMethod;
 
-                var FulfillmentCenterIds = melhorEnvioMethod.getFulfillmentCenters(
-                    shipments.Select(s => s.FulfillmentCenterId).Where(s => s != null).Distinct().ToList(),
-                    Items.Select(i => i.FulfillmentLocationCode).Where(s => s != null).Distinct().ToList(),
-                    store.MainFulfillmentCenterId);
-
-                var fulfillmentCenters = _fulfillmentCenterService.GetAsync(FulfillmentCenterIds).GetAwaiter().GetResult();
-
-                var shipmentSelect = melhorEnvioMethod.Calculate(store, pCustomerOrder.Shipments.FirstOrDefault().DeliveryAddress.PostalCode, pCustomerOrder.Items, fulfillmentCenters.FirstOrDefault()).FirstOrDefault(q => q.Id == MelhorEnvioMethod.DecodeOptionName(shipment.ShipmentMethodOption).ServiceID);
-                if (shipmentSelect == null)
-                    return false;
-
-                shipment.Price = shipmentSelect.CustomPrice;
-                shipment.Items.Clear();
-                shipment.Packages = new List<ShipmentPackage>();
-
-
-                foreach (var Package in shipmentSelect.Packages)
-                {
-                    var shipPack = new ShipmentPackage2()
-                    {
-                        Height = Package.Dimensions.Height,
-                        Length = Package.Dimensions.Length,
-                        Width = Package.Dimensions.Width,
-                        MeasureUnit = "cm",
-                        Weight = Package.Weight,
-                        WeightUnit = "kg",
-                        PackageType = Package.Format,
-                        MinDays = shipmentSelect.customDeliveryRange.Min,
-                        MaxDays = shipmentSelect.customDeliveryRange.Max,
-                        Items = new List<ShipmentItem>()
-                    };
-
-                    foreach (var product in Package.Products)
-                    {
-                        var LineItem = Items.FirstOrDefault(i => i.ProductId == product.Id);
-                        var item = new ShipmentItem() { LineItemId = LineItem.Id, LineItem = LineItem, Quantity = product.Quantity };
-                        shipPack.Items.Add(item);
-                    }
-                    shipment.Packages.Add(shipPack);
-                }
-            }
-            return true;
-        }
 
     }
 }

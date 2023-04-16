@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 using System.Threading.Tasks;
 using vc_module_MelhorEnvio.Core;
 using VirtoCommerce.OrdersModule.Core.Model;
@@ -10,12 +11,10 @@ namespace vc_module_MelhorEnvio.Web.Controllers.Api
     [Route("api/melhorenvio")]
     public class MelhorEnvioController : Controller
     {
-        private readonly IMelhorEnvioService _melhorEnvioService;
         private readonly ICrudService<CustomerOrder> _orderService;
 
-        public MelhorEnvioController(ICrudService<CustomerOrder> pCustomerOrderService, IMelhorEnvioService pMelhorEnvioService)
+        public MelhorEnvioController(ICrudService<CustomerOrder> pCustomerOrderService)
         {
-            _melhorEnvioService = pMelhorEnvioService;
             _orderService = pCustomerOrderService;
         }
 
@@ -26,7 +25,8 @@ namespace vc_module_MelhorEnvio.Web.Controllers.Api
             var order = await _orderService.GetByIdAsync(data.order_id);
             if (order != null)
             {
-                if (_melhorEnvioService.SendMECart(order))
+                var melhoEnvioSrv = order.Shipments.Where(s => s.ShipmentMethodCode == nameof(MelhorEnvioMethod)).FirstOrDefault()?.ShippingMethod as MelhorEnvioMethod;
+                if (melhoEnvioSrv != null && melhoEnvioSrv.SendMECart(order))
                 {
                     await _orderService.SaveChangesAsync(new[] { order });
                 }
