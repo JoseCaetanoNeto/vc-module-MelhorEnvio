@@ -258,17 +258,19 @@ namespace vc_module_MelhorEnvio.Core
                     if (Checkout)
                     {
                         var resultCheckout = _melhorEnvioService.CheckOut(OptionCall(), package.OuterId, store);
-                        shipment.Comment += $"Efetuado pagamento: {resultCheckout.purchase.Protocol} - {resultCheckout.purchase.Status} {Environment.NewLine}";
+                        shipment.Comment += $"Efetuado pagamento: {resultCheckout.purchase?.Protocol} - {resultCheckout.purchase?.Status} {resultCheckout.errorOut?.message} {Environment.NewLine}";
+                        if (resultCheckout.errorOut == null || resultCheckout.errorOut.status_code == 0)
+                        { 
+                            var resultGenerateList = _melhorEnvioService.Generate(OptionCall(), package.OuterId, store);
+                            var resultGenerate = resultGenerateList[package.OuterId];
+                            shipment.Comment += $"Etiqueta Gerada: {resultGenerate?.Status} - {resultGenerate?.Message} {Environment.NewLine}";
 
-                        var resultGenerateList = _melhorEnvioService.Generate(OptionCall(), package.OuterId, store);
-                        var resultGenerate = resultGenerateList[package.OuterId];
-                        shipment.Comment += $"Etiqueta Gerada: {resultGenerate?.Status} - {resultGenerate?.Message} {Environment.NewLine}";
+                            var LinkEtiquea = _melhorEnvioService.Print(OptionCall(), (PrintMode)1, package.OuterId, store);
+                            shipment.Comment += $"Link Etiqueta: {LinkEtiquea?.Url} {Environment.NewLine}";
 
-                        var LinkEtiquea = _melhorEnvioService.Print(OptionCall(), (PrintMode)1, package.OuterId, store);
-                        shipment.Comment += $"Link Etiqueta: {LinkEtiquea?.Url} {Environment.NewLine}";
-
-                        IList<DynamicProperty> dynamicProp = new List<DynamicProperty>();
-                        dynamicProp.SetDynamicProp(_dynamicPropertySearchService, shipment, ModuleConstants.K_linkEtiqueta, LinkEtiquea?.Url).GetAwaiter().GetResult();
+                            IList<DynamicProperty> dynamicProp = new List<DynamicProperty>();
+                            dynamicProp.SetDynamicProp(_dynamicPropertySearchService, shipment, ModuleConstants.K_linkEtiqueta, LinkEtiquea?.Url).GetAwaiter().GetResult();
+                        }
                     }
                 }
             }
